@@ -9,9 +9,11 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed-database.js",
+    "seed:all": "node scripts/seed-all-counties.js",
     "seed:newark-essex": "node scripts/seed-newark-essex.js",
     "seed:hudson": "node scripts/seed-hudson.js",
     "seed:union": "node scripts/seed-union.js",
+    "seed:bergen": "node scripts/seed-bergen.js",
     "import:csv": "node scripts/import-csv.js"
   },
   "dependencies": {
