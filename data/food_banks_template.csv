@@ -1,0 +1,3 @@
+name,address,city,state,zip_code,latitude,longitude,phone,email,website,active,notes
+Community Food Bank,123 Main Street,Springfield,IL,62701,39.7817,-89.6501,217-555-0100,info@communityfoodbank.org,https://communityfoodbank.org,true,Serves low-income families
+Neighborhood Pantry,456 Oak Avenue,Springfield,IL,62702,39.7850,-89.6450,217-555-0200,contact@neighborhoodpantry.org,https://neighborhoodpantry.org,true,Youth programs available

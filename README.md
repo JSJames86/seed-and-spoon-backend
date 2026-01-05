@@ -196,6 +196,35 @@ npm run dev
 
 The API will be available at `http://localhost:3000/api`
 
+Import Food Bank Data
+
+After setting up your database, you'll want to import your food bank data.
+
+Method 1: CSV Import (Recommended)
+
+1. Export your Google Sheet as CSV (File → Download → CSV)
+2. Save it in the `data/` folder
+3. Run the import script:
+   ```bash
+   npm run import:csv data/your-food-banks.csv
+   ```
+
+Method 2: Direct Supabase Import
+
+1. Go to your Supabase project → Table Editor → food_banks
+2. Click "Insert" → "Import data from CSV"
+3. Upload your CSV file and map columns
+
+Method 3: Using the Seed Script
+
+1. Edit `scripts/seed-database.js` with your data
+2. Run:
+   ```bash
+   npm run seed
+   ```
+
+See `DATA_IMPORT_GUIDE.md` for detailed instructions and column mapping.
+
 Deploy to Vercel
 
 1. Push your code to GitHub
