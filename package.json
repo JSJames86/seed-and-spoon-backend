@@ -14,7 +14,8 @@
     "seed:hudson": "node scripts/seed-hudson.js",
     "seed:union": "node scripts/seed-union.js",
     "seed:bergen": "node scripts/seed-bergen.js",
-    "import:csv": "node scripts/import-csv.js"
+    "import:csv": "node scripts/import-csv.js",
+    "geocode": "node scripts/geocode-food-banks.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",

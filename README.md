@@ -282,6 +282,25 @@ npm run dev
 
 The API will be available at `http://localhost:3000/api`
 
+Health Check & Diagnostics
+
+Check if everything is configured correctly:
+
+```bash
+# Local
+curl http://localhost:3000/api/health
+
+# Production
+curl https://your-domain.vercel.app/api/health
+```
+
+The health endpoint will tell you:
+- ✅ What's working
+- ❌ What's broken
+- 💡 How to fix issues
+
+**Having issues?** See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for complete diagnostic guide.
+
 Import Food Bank Data
 
 After setting up your database, you'll want to import your food bank data.
@@ -310,6 +329,19 @@ Method 3: Using the Seed Script
    ```
 
 See `DATA_IMPORT_GUIDE.md` for detailed instructions and column mapping.
+
+Add Coordinates to Food Banks (Required for Maps)
+
+After importing food banks, add latitude/longitude coordinates:
+
+```bash
+npm run geocode
+```
+
+This uses Google Maps Geocoding API to automatically add coordinates to all food banks. **Required** for:
+- Maps functionality
+- Nearby food bank search
+- Distance calculations
 
 Deploy to Vercel
 
