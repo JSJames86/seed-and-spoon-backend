@@ -7,7 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "node scripts/seed-database.js",
+    "seed:all": "node scripts/seed-all-counties.js",
+    "seed:newark-essex": "node scripts/seed-newark-essex.js",
+    "seed:hudson": "node scripts/seed-hudson.js",
+    "seed:union": "node scripts/seed-union.js",
+    "seed:bergen": "node scripts/seed-bergen.js",
+    "import:csv": "node scripts/import-csv.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
@@ -17,6 +24,7 @@
     "stripe": "^14.10.0"
   },
   "devDependencies": {
+    "dotenv": "^16.3.1",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4"
   },

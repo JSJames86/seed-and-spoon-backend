@@ -29,12 +29,22 @@ Folder Structure
 │         │     └─ hours.js
 │         ├─ donations/
 │         │     └─ webhook.js
+│         ├─ maps/
+│         │     ├─ nearby.js
+│         │     ├─ geocode.js
+│         │     └─ distance.js
 │         └─ admin/
 │               ├─ volunteers.js
 │               ├─ volunteer.js
 │               └─ notes.js
 ├─ /lib
-│    └─ supabaseClient.js
+│    ├─ supabaseClient.js
+│    └─ googleMapsClient.js
+├─ /scripts
+│    ├─ seed-all-counties.js
+│    └─ ...county seed scripts
+├─ /data
+│    └─ ...county CSV files
 ├─ package.json
 └─ next.config.js
 
@@ -78,9 +88,15 @@ API Routes
 Directory Endpoints (Public)
 
 `GET /api/directory/food-banks`
-- List all active food banks
-- Query params: `latitude`, `longitude`, `radius` (optional, for proximity filtering)
-- Returns: `{ foodBanks: [...] }`
+- List all active food banks with optional proximity filtering
+- Query params:
+  - `latitude`, `longitude` - User coordinates for proximity search
+  - `radius` - Search radius in miles (default: 10)
+  - `county` - Filter by county name
+  - `city` - Filter by city name
+  - `include_directions` - Add Google Maps directions URL (true/false)
+- Returns: `{ foodBanks: [...], count: number, filters: {...} }`
+- When coordinates provided, results include `distance` in miles and are sorted by proximity
 
 `POST /api/directory/food-banks`
 - Create a new food bank entry
@@ -165,6 +181,33 @@ Admin / Volunteers
 
 ⚠️ Admin routes should eventually have authentication/role checks.
 
+Google Maps Integration
+
+`GET /api/maps/nearby`
+- Find food banks near a location (optimized for mobile/map view)
+- Query params:
+  - `latitude`, `longitude` - User location (required)
+  - `radius` - Search radius in miles (default: 5)
+  - `limit` - Max results to return (default: 10)
+  - `include_map` - Include static map URL (true/false)
+- Returns: `{ location: {...}, radius_miles: number, count: number, food_banks: [...], map_url?: string }`
+- Each food bank includes `distance` in miles and `directions_url`
+
+`GET /api/maps/geocode`
+- Convert address to coordinates
+- Query param: `address` - Full address string
+- Returns: `{ address: string, coordinates: { latitude: number, longitude: number } }`
+
+`POST /api/maps/geocode`
+- Convert address to coordinates (alternative method)
+- Body: `{ address: string }`
+- Returns: `{ address: string, coordinates: { latitude: number, longitude: number } }`
+
+`GET /api/maps/distance`
+- Calculate distance between two points
+- Query params: `lat1`, `lng1`, `lat2`, `lng2`
+- Returns: `{ distance_miles: number, distance_km: number, origin: {...}, destination: {...} }`
+
 Development
 
 Clone repo:
@@ -195,6 +238,35 @@ npm run dev
 ```
 
 The API will be available at `http://localhost:3000/api`
+
+Import Food Bank Data
+
+After setting up your database, you'll want to import your food bank data.
+
+Method 1: CSV Import (Recommended)
+
+1. Export your Google Sheet as CSV (File → Download → CSV)
+2. Save it in the `data/` folder
+3. Run the import script:
+   ```bash
+   npm run import:csv data/your-food-banks.csv
+   ```
+
+Method 2: Direct Supabase Import
+
+1. Go to your Supabase project → Table Editor → food_banks
+2. Click "Insert" → "Import data from CSV"
+3. Upload your CSV file and map columns
+
+Method 3: Using the Seed Script
+
+1. Edit `scripts/seed-database.js` with your data
+2. Run:
+   ```bash
+   npm run seed
+   ```
+
+See `DATA_IMPORT_GUIDE.md` for detailed instructions and column mapping.
 
 Deploy to Vercel
 
