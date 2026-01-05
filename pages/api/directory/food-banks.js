@@ -1,22 +1,31 @@
 import { supabase } from '../../../lib/supabaseClient'
+import { filterByProximity, getDirectionsUrl } from '../../../lib/googleMapsClient'
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const { latitude, longitude, radius = 10 } = req.query
+      const {
+        latitude,
+        longitude,
+        radius = 10,
+        county,
+        city,
+        include_directions = false
+      } = req.query
 
       let query = supabase
         .from('food_banks')
         .select('*')
         .eq('active', true)
 
-      // If coordinates provided, filter by proximity
-      if (latitude && longitude) {
-        // This assumes you have a function in Supabase to calculate distance
-        // You can also implement client-side filtering
-        query = query.order('name')
-      } else {
-        query = query.order('name')
+      // Filter by county if provided
+      if (county) {
+        query = query.eq('county', county)
+      }
+
+      // Filter by city if provided
+      if (city) {
+        query = query.ilike('city', city)
       }
 
       const { data, error } = await query
@@ -25,7 +34,39 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: error.message })
       }
 
-      return res.status(200).json({ foodBanks: data })
+      let foodBanks = data
+
+      // If coordinates provided, filter by proximity and add distance
+      if (latitude && longitude) {
+        const userLat = parseFloat(latitude)
+        const userLng = parseFloat(longitude)
+        const radiusMiles = parseFloat(radius)
+
+        foodBanks = filterByProximity(foodBanks, userLat, userLng, radiusMiles)
+
+        // Optionally add directions URL
+        if (include_directions === 'true') {
+          foodBanks = foodBanks.map(fb => ({
+            ...fb,
+            directions_url: getDirectionsUrl(`${userLat},${userLng}`, fb.address)
+          }))
+        }
+      } else {
+        // No proximity filtering, just sort by name
+        foodBanks = foodBanks.sort((a, b) => a.name.localeCompare(b.name))
+      }
+
+      return res.status(200).json({
+        foodBanks,
+        count: foodBanks.length,
+        filters: {
+          latitude: latitude || null,
+          longitude: longitude || null,
+          radius: latitude && longitude ? parseFloat(radius) : null,
+          county: county || null,
+          city: city || null
+        }
+      })
     } catch (error) {
       return res.status(500).json({ error: 'Failed to fetch food banks' })
     }

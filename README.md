@@ -29,12 +29,22 @@ Folder Structure
 │         │     └─ hours.js
 │         ├─ donations/
 │         │     └─ webhook.js
+│         ├─ maps/
+│         │     ├─ nearby.js
+│         │     ├─ geocode.js
+│         │     └─ distance.js
 │         └─ admin/
 │               ├─ volunteers.js
 │               ├─ volunteer.js
 │               └─ notes.js
 ├─ /lib
-│    └─ supabaseClient.js
+│    ├─ supabaseClient.js
+│    └─ googleMapsClient.js
+├─ /scripts
+│    ├─ seed-all-counties.js
+│    └─ ...county seed scripts
+├─ /data
+│    └─ ...county CSV files
 ├─ package.json
 └─ next.config.js
 
@@ -78,9 +88,15 @@ API Routes
 Directory Endpoints (Public)
 
 `GET /api/directory/food-banks`
-- List all active food banks
-- Query params: `latitude`, `longitude`, `radius` (optional, for proximity filtering)
-- Returns: `{ foodBanks: [...] }`
+- List all active food banks with optional proximity filtering
+- Query params:
+  - `latitude`, `longitude` - User coordinates for proximity search
+  - `radius` - Search radius in miles (default: 10)
+  - `county` - Filter by county name
+  - `city` - Filter by city name
+  - `include_directions` - Add Google Maps directions URL (true/false)
+- Returns: `{ foodBanks: [...], count: number, filters: {...} }`
+- When coordinates provided, results include `distance` in miles and are sorted by proximity
 
 `POST /api/directory/food-banks`
 - Create a new food bank entry
@@ -164,6 +180,33 @@ Admin / Volunteers
 - Returns: `{ message: "Note deleted successfully" }`
 
 ⚠️ Admin routes should eventually have authentication/role checks.
+
+Google Maps Integration
+
+`GET /api/maps/nearby`
+- Find food banks near a location (optimized for mobile/map view)
+- Query params:
+  - `latitude`, `longitude` - User location (required)
+  - `radius` - Search radius in miles (default: 5)
+  - `limit` - Max results to return (default: 10)
+  - `include_map` - Include static map URL (true/false)
+- Returns: `{ location: {...}, radius_miles: number, count: number, food_banks: [...], map_url?: string }`
+- Each food bank includes `distance` in miles and `directions_url`
+
+`GET /api/maps/geocode`
+- Convert address to coordinates
+- Query param: `address` - Full address string
+- Returns: `{ address: string, coordinates: { latitude: number, longitude: number } }`
+
+`POST /api/maps/geocode`
+- Convert address to coordinates (alternative method)
+- Body: `{ address: string }`
+- Returns: `{ address: string, coordinates: { latitude: number, longitude: number } }`
+
+`GET /api/maps/distance`
+- Calculate distance between two points
+- Query params: `lat1`, `lng1`, `lat2`, `lng2`
+- Returns: `{ distance_miles: number, distance_km: number, origin: {...}, destination: {...} }`
 
 Development
 
