@@ -74,43 +74,150 @@ STRIPE_WEBHOOK_SECRET=<stripe_webhook_secret>
 GOOGLE_MAPS_API_KEY=<google_maps_api_key>
 
 API Routes
-Public
 
-/api/directory/food-banks – GET: list all food banks
+Directory Endpoints (Public)
 
-/api/directory/services – GET: list services
+`GET /api/directory/food-banks`
+- List all active food banks
+- Query params: `latitude`, `longitude`, `radius` (optional, for proximity filtering)
+- Returns: `{ foodBanks: [...] }`
 
-/api/directory/hours – GET: operating hours
+`POST /api/directory/food-banks`
+- Create a new food bank entry
+- Body: food bank data object
+- Returns: `{ foodBank: {...} }`
+
+`GET /api/directory/services`
+- List services offered by food banks
+- Query params: `food_bank_id`, `service_type` (optional filters)
+- Returns: `{ services: [...] }` with food bank details
+
+`POST /api/directory/services`
+- Create a new service entry
+- Body: service data object
+- Returns: `{ service: {...} }`
+
+`GET /api/directory/hours`
+- Get operating hours for a food bank
+- Query params: `food_bank_id` (required)
+- Returns: `{ hours: [...] }`
+
+`POST /api/directory/hours`
+- Create operating hours entry
+- Body: hours data object
+- Returns: `{ hours: {...} }`
+
+`PUT /api/directory/hours`
+- Update operating hours
+- Body: `{ id, ...updateData }`
+- Returns: `{ hours: {...} }`
 
 Donations
 
-/api/donations/webhook – POST: Stripe webhook for recording donations
+`POST /api/donations/webhook`
+- Stripe webhook endpoint for payment events
+- Automatically logs successful and failed donations to Supabase
+- Events handled: `payment_intent.succeeded`, `payment_intent.payment_failed`
 
 Admin / Volunteers
 
-/api/admin/volunteers – GET: list volunteers
+`GET /api/admin/volunteers`
+- List volunteers with pagination
+- Query params: `status`, `food_bank_id`, `limit`, `offset`
+- Returns: `{ volunteers: [...], total: number }`
 
-/api/admin/volunteer – POST: add new volunteer
+`POST /api/admin/volunteers`
+- Create a new volunteer record
+- Body: volunteer data object
+- Returns: `{ volunteer: {...} }`
 
-/api/admin/notes – GET/POST: admin notes
+`GET /api/admin/volunteer?id={id}`
+- Get single volunteer details
+- Returns: `{ volunteer: {...} }` with food bank details
+
+`PUT /api/admin/volunteer?id={id}`
+- Update volunteer record
+- Body: update data object
+- Returns: `{ volunteer: {...} }`
+
+`DELETE /api/admin/volunteer?id={id}`
+- Delete volunteer record
+- Returns: `{ message: "Volunteer deleted successfully" }`
+
+`GET /api/admin/notes`
+- List admin notes
+- Query params: `resource_type`, `resource_id`, `limit`, `offset`
+- Returns: `{ notes: [...], total: number }`
+
+`POST /api/admin/notes`
+- Create a new note
+- Body: `{ resource_type, resource_id, content, ... }`
+- Returns: `{ note: {...} }`
+
+`PUT /api/admin/notes`
+- Update existing note
+- Body: `{ id, ...updateData }`
+- Returns: `{ note: {...} }`
+
+`DELETE /api/admin/notes?id={id}`
+- Delete a note
+- Returns: `{ message: "Note deleted successfully" }`
 
 ⚠️ Admin routes should eventually have authentication/role checks.
 
 Development
 
-Clone repo
+Clone repo:
+
+```bash
+git clone https://github.com/JSJames86/seed-and-spoon-backend.git
+cd seed-and-spoon-backend
+```
 
 Install dependencies:
 
+```bash
 npm install
+```
 
+Set up environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add your API keys.
 
 Run locally:
 
+```bash
 npm run dev
+```
 
+The API will be available at `http://localhost:3000/api`
 
-Deploy to Vercel and verify API routes
+Deploy to Vercel
+
+1. Push your code to GitHub
+2. Import the repository in Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
+5. Configure Stripe webhook URL in Stripe dashboard:
+   - Webhook URL: `https://your-domain.vercel.app/api/donations/webhook`
+   - Events to listen for: `payment_intent.succeeded`, `payment_intent.payment_failed`
+
+Test API routes:
+
+```bash
+# Test food banks endpoint
+curl https://your-domain.vercel.app/api/directory/food-banks
+
+# Test services endpoint
+curl https://your-domain.vercel.app/api/directory/services
+
+# Test volunteers endpoint
+curl https://your-domain.vercel.app/api/admin/volunteers
+```
 
 Principles
 
