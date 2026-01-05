@@ -28,6 +28,10 @@ Folder Structure
 │         │     ├─ services.js
 │         │     └─ hours.js
 │         ├─ donations/
+│         │     ├─ create.js
+│         │     ├─ history.js
+│         │     ├─ stats.js
+│         │     ├─ [id].js
 │         │     └─ webhook.js
 │         ├─ maps/
 │         │     ├─ nearby.js
@@ -128,12 +132,51 @@ Directory Endpoints (Public)
 - Body: `{ id, ...updateData }`
 - Returns: `{ hours: {...} }`
 
-Donations
+Donations & Stripe Integration
+
+`POST /api/donations/create`
+- Create a new donation payment intent
+- Body:
+  - `amount` - Donation amount in dollars (required)
+  - `currency` - Currency code (default: 'usd')
+  - `donor_email` - Donor's email for receipt (required)
+  - `donor_name` - Donor's name (optional)
+  - `metadata` - Additional data object (optional)
+- Returns: `{ client_secret: string, payment_intent_id: string, amount: number, currency: string }`
+- Use `client_secret` with Stripe.js on frontend to complete payment
+
+`GET /api/donations/history`
+- Retrieve donation history with filters
+- Query params:
+  - `status` - Filter by status (succeeded, failed, pending)
+  - `donor_email` - Filter by donor email
+  - `start_date`, `end_date` - Date range filter
+  - `limit`, `offset` - Pagination (default: 50, 0)
+- Returns: `{ donations: [...], count: number, total: number, summary: {...}, pagination: {...} }`
+- Summary includes total_amount, successful_donations, average_donation
+
+`GET /api/donations/stats`
+- Get donation statistics and analytics
+- Query params:
+  - `period` - Time period: 'today', 'week', 'month', 'year', 'all' (default: 'all')
+- Returns comprehensive stats:
+  - Total donations, successful/failed/pending counts
+  - Total amount raised, average donation, largest donation
+  - Unique donor count, success rate
+  - Breakdown by currency
+
+`GET /api/donations/[id]`
+- Retrieve a specific donation by payment intent ID
+- Returns donation details from database + latest Stripe status
+- Fallback to Stripe if not found in database
 
 `POST /api/donations/webhook`
 - Stripe webhook endpoint for payment events
 - Automatically logs successful and failed donations to Supabase
 - Events handled: `payment_intent.succeeded`, `payment_intent.payment_failed`
+- Configure in Stripe Dashboard:
+  - Webhook URL: `https://your-domain.vercel.app/api/donations/webhook`
+  - Events: payment_intent.succeeded, payment_intent.payment_failed
 
 Admin / Volunteers
 
