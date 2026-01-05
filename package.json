@@ -10,6 +10,7 @@
     "lint": "next lint",
     "seed": "node scripts/seed-database.js",
     "seed:newark-essex": "node scripts/seed-newark-essex.js",
+    "seed:hudson": "node scripts/seed-hudson.js",
     "import:csv": "node scripts/import-csv.js"
   },
   "dependencies": {
