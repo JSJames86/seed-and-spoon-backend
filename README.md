@@ -344,6 +344,27 @@ Lean & cost-effective – optimized for Vercel and Supabase free tiers
 
 Mission-aligned – backend supports feeding youth, managing volunteers, and donations efficiently
 
+## Phase 2: Admin Dashboard & CRM (✅ COMPLETED)
+
+Phase 2 adds comprehensive admin features, volunteer management, donor tracking, and calendar integration.
+
+**New Features:**
+- 📊 Admin Dashboard with real-time statistics
+- 👥 Volunteer task assignment and hours tracking
+- 💰 Donor management and donation history
+- 📅 Event calendar with Google/Apple Calendar sync
+- 🔐 Role-based authentication and authorization
+
+**Documentation:**
+- See [PHASE2_README.md](./PHASE2_README.md) for feature overview
+- See [PHASE2_API_TESTING.md](./PHASE2_API_TESTING.md) for testing guide
+- See [migrations/002_phase2_tables.sql](./migrations/002_phase2_tables.sql) for database schema
+
+**Quick Start:**
+1. Run Phase 2 migration in Supabase
+2. Set up admin users with proper roles
+3. Test endpoints with authentication tokens
+
 Future Plans
 
 Integrate SpoonAssist app API
