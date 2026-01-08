@@ -1,21 +1,30 @@
 # seed-and-spoon-backend
 
-> **⚠️ IMPORTANT: This backend uses BUN ONLY - npm is NOT allowed**
+> **🚨 CRITICAL: npm is COMPLETELY PROHIBITED**
+>
+> **This backend actively blocks npm - builds will fail if npm is used.**
 >
 > **📚 Required Reading:**
-> - [BUN_MIGRATION.md](./BUN_MIGRATION.md) - Why npm is banned and how to use Bun
+> - [BUN_BACKEND_MIGRATION.md](./BUN_BACKEND_MIGRATION.md) - npm prohibition & Bun-only setup
 > - [AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md) - Authentication & role-based access control
 
 The Seed & Spoon backend powers our nonprofit website, enabling youth access to food and resources, managing volunteers and donors, processing donations via Stripe, and providing service data via Supabase & Google Maps. It's built to be lean, reliable, and mission-focused.
 
 ## 🔐 Security-First Architecture
 
-This backend implements **server-side role-based access control (RBAC)** using Supabase Auth:
+This backend implements **hardened security** with multiple layers:
 
+### Authentication & Authorization
 - ✅ **4 distinct roles:** Admin, Donor, Client, Volunteer
 - ✅ **Zero trust:** All auth verified server-side
 - ✅ **Least privilege:** Users can only access their own data
-- ✅ **Bun-only:** For security and performance reasons
+- ✅ **Server-side RBAC:** Using Supabase Auth
+
+### Infrastructure Security
+- ✅ **Bun-only package management:** npm actively blocked
+- ✅ **Locked Node version:** 18.x (deterministic builds)
+- ✅ **npm detection guardrail:** Fails builds if npm detected
+- ✅ **Secure lockfile:** `bun.lockb` with checksums
 
 This backend supports three core user experiences:
 
@@ -369,8 +378,19 @@ The API will be available at `http://localhost:3000/api`
 
 ### 📚 Important Documentation
 
-- **[BUN_MIGRATION.md](./BUN_MIGRATION.md)** - Read this to understand why npm is banned
-- **[AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md)** - Learn about authentication and roles
+- **[BUN_BACKEND_MIGRATION.md](./BUN_BACKEND_MIGRATION.md)** - **READ THIS FIRST** - npm prohibition & security
+- **[AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md)** - Authentication & role-based access control
+
+### ⚠️ npm Detection
+
+This repository includes an active npm guardrail. If you attempt to use npm:
+
+```bash
+$ npm install
+❌ ERROR: npm is PROHIBITED in this repository
+   See BUN_BACKEND_MIGRATION.md
+   [Build fails]
+```
 
 Import Food Bank Data
 
