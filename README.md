@@ -1,5 +1,21 @@
 # seed-and-spoon-backend
-The Seed & Spoon backend powers our nonprofit website, enabling youth access to food and resources, managing volunteers and donors, processing donations via Stripe, and providing service data via Supabase & Google Maps. It’s built to be lean, reliable, and mission-focused.
+
+> **⚠️ IMPORTANT: This backend uses BUN ONLY - npm is NOT allowed**
+>
+> **📚 Required Reading:**
+> - [BUN_MIGRATION.md](./BUN_MIGRATION.md) - Why npm is banned and how to use Bun
+> - [AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md) - Authentication & role-based access control
+
+The Seed & Spoon backend powers our nonprofit website, enabling youth access to food and resources, managing volunteers and donors, processing donations via Stripe, and providing service data via Supabase & Google Maps. It's built to be lean, reliable, and mission-focused.
+
+## 🔐 Security-First Architecture
+
+This backend implements **server-side role-based access control (RBAC)** using Supabase Auth:
+
+- ✅ **4 distinct roles:** Admin, Donor, Client, Volunteer
+- ✅ **Zero trust:** All auth verified server-side
+- ✅ **Least privilege:** Users can only access their own data
+- ✅ **Bun-only:** For security and performance reasons
 
 This backend supports three core user experiences:
 
@@ -222,7 +238,58 @@ Admin / Volunteers
 - Delete a note
 - Returns: `{ message: "Note deleted successfully" }`
 
-⚠️ Admin routes should eventually have authentication/role checks.
+## 🔐 Protected Routes (Authentication Required)
+
+All admin and user-specific routes are protected with **Supabase Auth** and **role-based access control (RBAC)**.
+
+See **[AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md)** for complete details.
+
+### Donor Routes (Role: `donor`)
+
+`GET /api/donations/me`
+- Get authenticated donor's donation history
+- Automatically filtered to the logged-in donor's email
+- Returns: `{ success: true, data: { donations: [...], summary: {...}, pagination: {...} } }`
+- **Security:** Donors can ONLY view their own donations
+
+### Client Routes (Role: `client`)
+
+`GET /api/intakes/me`
+- Get authenticated client's intake/application data
+- Returns: `{ success: true, data: { intakes: [...], services: [...], profile: {...} } }`
+- **Security:** Clients can ONLY view their own intake records
+
+### Volunteer Routes (Role: `volunteer`)
+
+`GET /api/volunteer/hours`
+- Get authenticated volunteer's logged hours, tasks, and stats
+- Query params: `start_date`, `end_date`, `limit`, `offset`
+- Returns: `{ success: true, data: { volunteer: {...}, hours: [...], tasks: [...], stats: {...} } }`
+- **Security:** Volunteers can ONLY view their own hours
+
+### Any Authenticated User
+
+`GET /api/profile/me`
+- Get the authenticated user's profile
+- Returns: `{ success: true, data: { profile: {...}, user: {...} } }`
+
+`PUT /api/profile/me`
+- Update the authenticated user's profile
+- Body: `{ name, phone, address, preferences }`
+- **Note:** Users cannot change their own role
+- Returns: `{ success: true, data: { profile: {...} }, message: "Profile updated successfully" }`
+
+### Authentication Headers
+
+All protected routes require a valid Supabase JWT token:
+
+```http
+Authorization: Bearer <your-supabase-jwt-token>
+```
+
+**Error Responses:**
+- `401 Unauthorized` - Missing or invalid token
+- `403 Forbidden` - User does not have required role
 
 Google Maps Integration
 
@@ -251,7 +318,21 @@ Google Maps Integration
 - Query params: `lat1`, `lng1`, `lat2`, `lng2`
 - Returns: `{ distance_miles: number, distance_km: number, origin: {...}, destination: {...} }`
 
-Development
+## Development
+
+### Prerequisites
+
+**You MUST have Bun installed** (npm is not allowed):
+
+```bash
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Verify installation
+bun --version
+```
+
+### Setup
 
 Clone repo:
 
@@ -263,7 +344,11 @@ cd seed-and-spoon-backend
 Install dependencies:
 
 ```bash
-npm install
+# ✅ USE BUN (required)
+bun install
+
+# ❌ DO NOT use npm
+# npm install  <- THIS WILL FAIL
 ```
 
 Set up environment variables:
@@ -277,10 +362,15 @@ Edit `.env` and add your API keys.
 Run locally:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The API will be available at `http://localhost:3000/api`
+
+### 📚 Important Documentation
+
+- **[BUN_MIGRATION.md](./BUN_MIGRATION.md)** - Read this to understand why npm is banned
+- **[AUTH_ARCHITECTURE.md](./AUTH_ARCHITECTURE.md)** - Learn about authentication and roles
 
 Import Food Bank Data
 
@@ -292,7 +382,7 @@ Method 1: CSV Import (Recommended)
 2. Save it in the `data/` folder
 3. Run the import script:
    ```bash
-   npm run import:csv data/your-food-banks.csv
+   bun run import:csv data/your-food-banks.csv
    ```
 
 Method 2: Direct Supabase Import
@@ -306,7 +396,7 @@ Method 3: Using the Seed Script
 1. Edit `scripts/seed-database.js` with your data
 2. Run:
    ```bash
-   npm run seed
+   bun run seed
    ```
 
 See `DATA_IMPORT_GUIDE.md` for detailed instructions and column mapping.

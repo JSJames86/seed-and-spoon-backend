@@ -1,0 +1,9 @@
+[install]
+# Use default npm registry
+registry = "https://registry.npmjs.org/"
+
+# Cache directory
+cache = "~/.bun/install/cache"
+
+# Optional: Disable lockfile
+# frozenLockfile = false
