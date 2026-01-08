@@ -1,0 +1,29 @@
+# Vercel Ignore File
+# Files and directories to exclude from Vercel deployments
+
+# npm artifacts (PROHIBITED - Bun only)
+package-lock.json
+npm-debug.log*
+.npm/
+
+# Development files
+*.md
+!README.md
+.env.example
+.git/
+.github/
+
+# Data files
+data/
+scripts/seed-*.js
+scripts/import-csv.js
+
+# Documentation
+BUN_BACKEND_MIGRATION.md
+AUTH_ARCHITECTURE.md
+BACKEND_API_REQUIREMENTS.md
+DATABASE_SCHEMA.md
+DATA_IMPORT_GUIDE.md
+PHASE2_API_TESTING.md
+PHASE2_README.md
+SETUP_GUIDE.md

@@ -5,6 +5,11 @@
 /.pnp
 .pnp.js
 
+# npm artifacts (NOT ALLOWED - use Bun only)
+package-lock.json
+npm-debug.log
+.npm/
+
 # testing
 /coverage
 
@@ -23,6 +28,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Bun - DO NOT ignore bun.lockb
+# bun.lockb should be committed
 
 # local env files
 .env*.local

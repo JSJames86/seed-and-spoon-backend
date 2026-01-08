@@ -4,17 +4,18 @@
   "description": "Backend API for Seed & Spoon nonprofit - food bank directory, donations, and volunteer management",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "seed": "node scripts/seed-database.js",
-    "seed:all": "node scripts/seed-all-counties.js",
-    "seed:newark-essex": "node scripts/seed-newark-essex.js",
-    "seed:hudson": "node scripts/seed-hudson.js",
-    "seed:union": "node scripts/seed-union.js",
-    "seed:bergen": "node scripts/seed-bergen.js",
-    "import:csv": "node scripts/import-csv.js"
+    "dev": "bun --bun next dev",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start",
+    "lint": "bun --bun next lint",
+    "seed": "bun --bun scripts/seed-database.js",
+    "seed:all": "bun --bun scripts/seed-all-counties.js",
+    "seed:newark-essex": "bun --bun scripts/seed-newark-essex.js",
+    "seed:hudson": "bun --bun scripts/seed-hudson.js",
+    "seed:union": "bun --bun scripts/seed-union.js",
+    "seed:bergen": "bun --bun scripts/seed-bergen.js",
+    "import:csv": "bun --bun scripts/import-csv.js",
+    "preinstall": "node scripts/check-npm.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
@@ -29,6 +30,7 @@
     "eslint-config-next": "^14.0.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x",
+    "bun": ">=1.0.0"
   }
 }

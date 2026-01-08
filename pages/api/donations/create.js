@@ -1,9 +1,33 @@
+/**
+ * Donation Creation API - PUBLIC (with CORS)
+ * POST /api/donations/create
+ *
+ * Creates a Stripe Payment Intent for donations.
+ * Public endpoint to allow anyone to donate.
+ *
+ * Security:
+ * - CORS restricted to frontend origin only
+ * - Input validation
+ * - Stripe secret key never exposed
+ * - Rate limiting recommended (implement in production)
+ *
+ * @body {number} amount - Donation amount in dollars (minimum $1)
+ * @body {string} donor_email - Donor's email for receipt
+ * @body {string} donor_name - Donor's name (optional)
+ * @body {string} currency - Currency code (default: 'usd')
+ * @body {object} metadata - Additional metadata (optional)
+ *
+ * @returns {object} - Payment intent details
+ */
+
 import Stripe from 'stripe'
 import { supabase } from '../../../lib/supabaseClient'
+import { withCORS } from '../../../lib/corsMiddleware'
+import { Errors, sendSuccess } from '../../../lib/errorResponses'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const {
@@ -16,22 +40,28 @@ export default async function handler(req, res) {
 
       // Validate required fields
       if (!amount || amount < 1) {
-        return res.status(400).json({
-          error: 'Invalid amount',
-          message: 'Amount must be at least $1.00'
-        })
+        return Errors.validationError(res, 'Amount must be at least $1.00')
       }
 
       if (!donor_email) {
-        return res.status(400).json({
-          error: 'Missing required field',
-          message: 'Donor email is required'
-        })
+        return Errors.missingField(res, 'donor_email')
       }
 
-      // Create payment intent
+      // Validate email format (basic)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(donor_email)) {
+        return Errors.invalidInput(res, 'Invalid email address')
+      }
+
+      // Validate amount is a number
+      const donationAmount = parseFloat(amount)
+      if (isNaN(donationAmount) || donationAmount < 1) {
+        return Errors.validationError(res, 'Invalid donation amount')
+      }
+
+      // Create payment intent with Stripe
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
+        amount: Math.round(donationAmount * 100), // Convert to cents
         currency: currency.toLowerCase(),
         receipt_email: donor_email,
         description: `Donation to Seed & Spoon - ${donor_name || donor_email}`,
@@ -48,7 +78,7 @@ export default async function handler(req, res) {
         .from('donations')
         .insert([{
           stripe_payment_intent_id: paymentIntent.id,
-          amount: amount,
+          amount: donationAmount,
           currency: currency,
           donor_email: donor_email,
           donor_name: donor_name || null,
@@ -59,25 +89,33 @@ export default async function handler(req, res) {
 
       if (dbError) {
         console.error('Error logging donation:', dbError)
-        // Don't fail the request, just log the error
+        // Don't fail the request - Stripe payment intent created successfully
+        // The webhook will handle the final status update
       }
 
-      return res.status(200).json({
+      // Return payment intent details (client_secret needed for frontend)
+      // SECURITY: Never return stripe_secret_key or sensitive Stripe data
+      return sendSuccess(res, {
         client_secret: paymentIntent.client_secret,
         payment_intent_id: paymentIntent.id,
-        amount: amount,
+        amount: donationAmount,
         currency: currency
       })
 
     } catch (error) {
       console.error('Donation creation error:', error)
-      return res.status(500).json({
-        error: 'Failed to create donation',
-        message: error.message
-      })
+
+      // Check if error is from Stripe
+      if (error.type) {
+        return Errors.externalServiceError(res, 'Stripe', 'Payment processing failed. Please try again.')
+      }
+
+      return Errors.internalError(res, 'Failed to create donation')
     }
   } else {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).json({ error: `Method ${req.method} not allowed` })
+    return Errors.methodNotAllowed(res, ['POST'])
   }
 }
+
+// Export with CORS (public endpoint, no auth required)
+export default withCORS(handler)

@@ -1,6 +1,19 @@
-import { supabase } from '../../../lib/supabaseClient'
+/**
+ * Donation History API - ADMIN ONLY
+ * GET /api/donations/history
+ *
+ * Returns all donation records with filtering options.
+ * Requires admin authentication.
+ *
+ * Security: Admin-only access to prevent unauthorized access to donor data
+ */
 
-export default async function handler(req, res) {
+import { supabase } from '../../../lib/supabaseClient'
+import { requireAdmin } from '../../../lib/authMiddleware'
+import { withCORS } from '../../../lib/corsMiddleware'
+import { Errors, sendSuccess } from '../../../lib/errorResponses'
+
+async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const {
@@ -14,7 +27,7 @@ export default async function handler(req, res) {
 
       let query = supabase
         .from('donations')
-        .select('*')
+        .select('*', { count: 'exact' })
 
       // Filter by status if provided
       if (status) {
@@ -43,20 +56,21 @@ export default async function handler(req, res) {
       const { data, error, count } = await query
 
       if (error) {
-        return res.status(500).json({ error: error.message })
+        console.error('Database error fetching donations:', error)
+        return Errors.databaseError(res, 'Failed to fetch donation history')
       }
 
       // Calculate summary statistics
       const totalAmount = data.reduce((sum, donation) => {
         if (donation.status === 'succeeded') {
-          return sum + parseFloat(donation.amount)
+          return sum + parseFloat(donation.amount || 0)
         }
         return sum
       }, 0)
 
       const successfulDonations = data.filter(d => d.status === 'succeeded').length
 
-      return res.status(200).json({
+      return sendSuccess(res, {
         donations: data,
         count: data.length,
         total: count,
@@ -75,13 +89,12 @@ export default async function handler(req, res) {
 
     } catch (error) {
       console.error('Error fetching donation history:', error)
-      return res.status(500).json({
-        error: 'Failed to fetch donation history',
-        message: error.message
-      })
+      return Errors.internalError(res, 'An unexpected error occurred')
     }
   } else {
-    res.setHeader('Allow', ['GET'])
-    return res.status(405).json({ error: `Method ${req.method} not allowed` })
+    return Errors.methodNotAllowed(res, ['GET'])
   }
 }
+
+// Export with admin authentication and CORS
+export default withCORS(requireAdmin(handler))
