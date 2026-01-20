@@ -1,19 +1,9 @@
 {
   "buildCommand": "bun run build",
-  "installCommand": "bun install",
+  "installCommand": "bun install --ignore-scripts",
   "framework": "nextjs",
   "env": {
     "ENABLE_EXPERIMENTAL_COREPACK": "0"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_SUPABASE_URL": "@supabase_url",
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
-      "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-      "STRIPE_SECRET_KEY": "@stripe_secret_key",
-      "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
-      "GOOGLE_MAPS_API_KEY": "@google_maps_api_key"
-    }
   },
   "headers": [
     {
