@@ -1,6 +1,6 @@
 {
   "buildCommand": "bun run build",
-  "installCommand": "bun install",
+  "installCommand": "bun install --ignore-scripts",
   "framework": "nextjs",
   "env": {
     "ENABLE_EXPERIMENTAL_COREPACK": "0"
