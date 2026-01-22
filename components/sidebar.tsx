@@ -8,13 +8,10 @@ import {
   CreditCard,
   Users,
   Heart,
-  HandHelping,
   Briefcase,
   Gavel,
   Shield,
   Home,
-  FileText,
-  Calendar,
   ClipboardList
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -35,7 +32,7 @@ const roleNavItems: Record<string, { title: string; href: string; icon: any }[]>
     { title: "Donor Dashboard", href: "/dashboard/donor", icon: Heart },
   ],
   volunteer: [
-    { title: "Volunteer Hub", href: "/dashboard/volunteer", icon: HandHelping },
+    { title: "Volunteer Hub", href: "/dashboard/volunteer", icon: Users },
   ],
   employee: [
     { title: "Employee Portal", href: "/dashboard/employee", icon: Briefcase },

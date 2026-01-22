@@ -160,7 +160,7 @@ export default function ClientDashboard() {
                 </Table>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Once you apply to a program, you'll see your enrollment status here.
+                  Once you apply to a program, your enrollment status will appear here.
                 </p>
               )}
             </CardContent>
