@@ -208,7 +208,7 @@ export default function VolunteerDashboard() {
                 </Table>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Volunteer groups allow organizations (schools, churches, companies) to track their members' hours together.
+                  Volunteer groups allow organizations (schools, churches, companies) to track their member hours together.
                 </p>
               )}
             </CardContent>

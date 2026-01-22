@@ -115,7 +115,7 @@ export default function BoardDashboard() {
                 </Table>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Board meetings, agendas, and voting will be managed here. You'll receive notifications when new meetings are scheduled.
+                  Board meetings, agendas, and voting will be managed here. You will receive notifications when new meetings are scheduled.
                 </p>
               )}
             </CardContent>
