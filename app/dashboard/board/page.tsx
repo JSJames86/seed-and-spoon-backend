@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState } from "@/components/dashboard/empty-state"
+import { Gavel, CalendarDays, FileText } from "lucide-react"
 
 export default function BoardDashboard() {
   const [meetings, setMeetings] = useState<any[]>([])
@@ -34,18 +38,18 @@ export default function BoardDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
   const upcomingMeetings = meetings.filter(m => new Date(m.scheduled_at) > new Date())
   const pastMeetings = meetings.filter(m => new Date(m.scheduled_at) <= new Date())
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Board Portal</h1>
-        <p className="text-muted-foreground">View meetings, agendas, vote on motions, and access governance documents</p>
-      </div>
+    <DashboardShell
+      title="Board Portal"
+      description="View meetings, agendas, vote on motions, and access governance documents"
+      icon={Gavel}
+    >
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -76,17 +80,13 @@ export default function BoardDashboard() {
         </TabsList>
 
         <TabsContent value="meetings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Board Meetings</CardTitle>
-              <CardDescription>
-                {meetings.length > 0
-                  ? "Upcoming and past board meetings with agendas"
-                  : "No meetings scheduled. Meeting details, agendas, and voting will appear here."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {meetings.length > 0 ? (
+          {meetings.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Board Meetings</CardTitle>
+                <CardDescription>Upcoming and past board meetings with agendas</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -113,27 +113,25 @@ export default function BoardDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Board meetings, agendas, and voting will be managed here. You will receive notifications when new meetings are scheduled.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={CalendarDays}
+              title="No meetings scheduled"
+              description="Board meetings, agendas, and voting will be managed here. You will receive notifications when new meetings are scheduled."
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="policies">
-          <Card>
-            <CardHeader>
-              <CardTitle>Policies & Bylaws</CardTitle>
-              <CardDescription>
-                {policies.length > 0
-                  ? "Active organizational policies and bylaws"
-                  : "Organizational policies, bylaws, and procedures will be accessible here once published."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {policies.length > 0 ? (
+          {policies.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Policies & Bylaws</CardTitle>
+                <CardDescription>Active organizational policies and bylaws</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -160,13 +158,17 @@ export default function BoardDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No policies published yet.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title="No policies published yet"
+              description="Organizational policies, bylaws, and procedures will be accessible here once published by the Executive Director."
+            />
+          )}
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }

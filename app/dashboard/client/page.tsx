@@ -4,9 +4,12 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState, EmptyTableState } from "@/components/dashboard/empty-state"
+import { Home, ClipboardList, AlertTriangle } from "lucide-react"
 
 export default function ClientDashboard() {
   const [household, setHousehold] = useState<any>(null)
@@ -38,14 +41,48 @@ export default function ClientDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
+  // Full empty state: no household means brand new client
+  const isNewClient = !household && programs.length === 0
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
-        <p className="text-muted-foreground">Manage your household, programs, and preferences</p>
+    <DashboardShell
+      title="My Dashboard"
+      description="Manage your household, programs, and preferences"
+      icon={Home}
+    >
+      {/* Summary cards - show quick status at a glance */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Household Status</CardDescription>
+            <CardTitle className="text-lg">
+              {household ? (
+                <Badge variant="default">Set up</Badge>
+              ) : (
+                <Badge variant="secondary">Not set up</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Active Programs</CardDescription>
+            <CardTitle className="text-2xl">
+              {programs.filter(p => p.status === 'active').length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Open Reports</CardDescription>
+            <CardTitle className="text-2xl">
+              {reports.filter(r => r.status !== 'resolved').length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
       </div>
 
       <Tabs defaultValue="household">
@@ -56,17 +93,13 @@ export default function ClientDashboard() {
         </TabsList>
 
         <TabsContent value="household">
-          <Card>
-            <CardHeader>
-              <CardTitle>Household Information</CardTitle>
-              <CardDescription>
-                {household
-                  ? "Your household details and members"
-                  : "You haven't set up your household yet. Add your household to get started with services."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {household ? (
+          {household ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Household Information</CardTitle>
+                <CardDescription>Your household details and members</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -113,27 +146,26 @@ export default function ClientDashboard() {
                     </div>
                   )}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Set up your household to access food assistance programs, set delivery preferences, and add family members.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={Home}
+              title="No household set up yet"
+              description="Set up your household to access food assistance programs, set delivery preferences, and add family members."
+              action={{ label: "Set up household" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="programs">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Programs</CardTitle>
-              <CardDescription>
-                {programs.length > 0
-                  ? "Programs you're enrolled in or have applied to"
-                  : "You're not enrolled in any programs yet. Browse available programs to apply."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {programs.length > 0 ? (
+          {programs.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>My Programs</CardTitle>
+                <CardDescription>Programs you&apos;re enrolled in or have applied to</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -158,13 +190,16 @@ export default function ClientDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Once you apply to a program, your enrollment status will appear here.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={ClipboardList}
+              title="No program enrollments yet"
+              description="You're not enrolled in any programs yet. Once you set up your household, you can browse and apply to available food assistance programs."
+              action={{ label: "Browse programs" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="reports">
@@ -202,14 +237,15 @@ export default function ClientDashboard() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  No reports submitted. If you have a concern (allergy, safety issue, or feedback), you can submit it here.
-                </p>
+                <EmptyTableState
+                  message="No reports submitted."
+                  suggestion="If you have a concern (allergy, safety issue, or feedback), you can submit it here."
+                />
               )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }

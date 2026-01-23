@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState, EmptyTableState } from "@/components/dashboard/empty-state"
+import { Briefcase, Calendar, GraduationCap, FileText } from "lucide-react"
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -31,34 +35,33 @@ export default function EmployeeDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
   if (!data?.employee) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Employee Portal</h1>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground">
-              No employee record found. If you believe this is an error, please contact your manager or HR.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <DashboardShell
+        title="Employee Portal"
+        description="Your employee workspace"
+        icon={Briefcase}
+      >
+        <EmptyState
+          icon={Briefcase}
+          title="No employee record found"
+          description="Your employee profile hasn't been created yet. If you believe this is an error, please contact your manager or HR to get set up in the system."
+        />
+      </DashboardShell>
     )
   }
 
   const { employee, schedules, completedTrainings, requiredTrainings, documents } = data
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Employee Portal</h1>
-        <p className="text-muted-foreground">
-          {employee.position ? `${employee.position} - ${employee.department || 'General'}` : 'Welcome to your employee portal'}
-        </p>
-      </div>
+    <DashboardShell
+      title="Employee Portal"
+      description={employee.position ? `${employee.position} - ${employee.department || 'General'}` : 'Welcome to your employee portal'}
+      icon={Briefcase}
+    >
 
       {/* Employee Info Card */}
       <Card>
@@ -127,7 +130,10 @@ export default function EmployeeDashboard() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-sm text-muted-foreground">No schedule assigned yet.</p>
+                <EmptyTableState
+                  message="No schedule assigned yet."
+                  suggestion="Check with your manager for your assigned work hours."
+                />
               )}
             </CardContent>
           </Card>
@@ -202,7 +208,10 @@ export default function EmployeeDashboard() {
               )}
 
               {(!requiredTrainings || requiredTrainings.length === 0) && (!completedTrainings || completedTrainings.length === 0) && (
-                <p className="text-sm text-muted-foreground">No trainings assigned yet.</p>
+                <EmptyTableState
+                  message="No trainings assigned yet."
+                  suggestion="Required training modules will appear here as they are assigned to you."
+                />
               )}
             </CardContent>
           </Card>
@@ -243,14 +252,15 @@ export default function EmployeeDashboard() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  No documents available. The employee handbook and policies will appear here once uploaded.
-                </p>
+                <EmptyTableState
+                  message="No documents available yet."
+                  suggestion="The employee handbook, policies, and personal documents will appear here once uploaded by HR."
+                />
               )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }
