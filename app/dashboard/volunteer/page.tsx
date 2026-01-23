@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState, EmptyTableState } from "@/components/dashboard/empty-state"
+import { Users as UsersIcon, Calendar, UserPlus } from "lucide-react"
 
 export default function VolunteerDashboard() {
   const [shifts, setShifts] = useState<any[]>([])
@@ -37,16 +41,15 @@ export default function VolunteerDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Volunteer Hub</h1>
-        <p className="text-muted-foreground">View shifts, track hours, and manage group memberships</p>
-      </div>
-
+    <DashboardShell
+      title="Volunteer Hub"
+      description="View shifts, track hours, and manage group memberships"
+      icon={UsersIcon}
+    >
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -79,17 +82,13 @@ export default function VolunteerDashboard() {
         </TabsList>
 
         <TabsContent value="available">
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Shifts</CardTitle>
-              <CardDescription>
-                {shifts.length > 0
-                  ? "Open shifts you can sign up for"
-                  : "No shifts available right now. Check back soon for new volunteer opportunities."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {shifts.length > 0 ? (
+          {shifts.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Available Shifts</CardTitle>
+                <CardDescription>Open shifts you can sign up for</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -120,25 +119,25 @@ export default function VolunteerDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No shifts available at this time.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={Calendar}
+              title="No shifts available right now"
+              description="Check back soon for new volunteer opportunities. Shifts are posted regularly as events are scheduled."
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="my-shifts">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Shifts</CardTitle>
-              <CardDescription>
-                {myShifts.length > 0
-                  ? "Shifts you've signed up for"
-                  : "You haven't signed up for any shifts yet. Browse available shifts to get started."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {myShifts.length > 0 ? (
+          {myShifts.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>My Shifts</CardTitle>
+                <CardDescription>Shifts you've signed up for</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -167,25 +166,26 @@ export default function VolunteerDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">Sign up for shifts to start tracking your volunteer hours.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={Calendar}
+              title="No shifts signed up yet"
+              description="Browse available shifts and sign up to start tracking your volunteer hours. Your completed shifts and hours will show here."
+              action={{ label: "Browse shifts" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="groups">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Groups</CardTitle>
-              <CardDescription>
-                {groups.length > 0
-                  ? "Organizations and groups you volunteer with"
-                  : "You're not part of any volunteer groups yet. Ask your group leader for a QR code to join."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {groups.length > 0 ? (
+          {groups.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>My Groups</CardTitle>
+                <CardDescription>Organizations and groups you volunteer with</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -206,15 +206,18 @@ export default function VolunteerDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Volunteer groups allow organizations (schools, churches, companies) to track their member hours together.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={UserPlus}
+              title="No group memberships"
+              description="Volunteer groups allow organizations (schools, churches, companies) to track their member hours together. Ask your group leader for a join code."
+              action={{ label: "Join a group" }}
+            />
+          )}
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }

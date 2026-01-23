@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState, EmptyTableState } from "@/components/dashboard/empty-state"
+import { ClipboardList, BookOpen, Users, CalendarDays } from "lucide-react"
 
 export default function DirectorDashboard() {
   const [dashboardStats, setDashboardStats] = useState<any>(null)
@@ -40,15 +44,15 @@ export default function DirectorDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Executive Director Dashboard</h1>
-        <p className="text-muted-foreground">Full organizational visibility across all operations</p>
-      </div>
+    <DashboardShell
+      title="Executive Director Dashboard"
+      description="Full organizational visibility across all operations"
+      icon={ClipboardList}
+    >
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -92,17 +96,13 @@ export default function DirectorDashboard() {
         </TabsList>
 
         <TabsContent value="programs">
-          <Card>
-            <CardHeader>
-              <CardTitle>Program Overview</CardTitle>
-              <CardDescription>
-                {programs.length > 0
-                  ? "All programs and their enrollment status"
-                  : "Programs will appear here once created. Programs track food assistance, education, and community services."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {programs.length > 0 ? (
+          {programs.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Program Overview</CardTitle>
+                <CardDescription>All programs and their enrollment status</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -127,25 +127,26 @@ export default function DirectorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No programs created yet.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={BookOpen}
+              title="No programs created yet"
+              description="Programs track food assistance, education, and community services. Create your first program via CRM Admin to start enrolling clients."
+              action={{ label: "Go to CRM Admin" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="staff">
-          <Card>
-            <CardHeader>
-              <CardTitle>Staff Overview</CardTitle>
-              <CardDescription>
-                {employees.length > 0
-                  ? "Active employees and their departments"
-                  : "Employee records will appear here once staff are onboarded through the system."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {employees.length > 0 ? (
+          {employees.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Staff Overview</CardTitle>
+                <CardDescription>Active employees and their departments</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -168,25 +169,26 @@ export default function DirectorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No employees on record.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={Users}
+              title="No employees on record"
+              description="Employee records will appear here once staff are onboarded through the system. Use CRM Admin to add employees."
+              action={{ label: "Go to CRM Admin" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="governance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Board Meetings</CardTitle>
-              <CardDescription>
-                {meetings.length > 0
-                  ? "Scheduled board meetings"
-                  : "Board meetings will be listed here once scheduled. You can also manage agendas and votes."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {meetings.length > 0 ? (
+          {meetings.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Board Meetings</CardTitle>
+                <CardDescription>Scheduled board meetings</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -207,13 +209,17 @@ export default function DirectorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No upcoming meetings.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={CalendarDays}
+              title="No upcoming meetings"
+              description="Board meetings will be listed here once scheduled. You can manage agendas, attendance, and votes from here."
+            />
+          )}
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }

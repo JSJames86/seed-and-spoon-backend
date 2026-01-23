@@ -6,6 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
+import { EmptyState, EmptyTableState } from "@/components/dashboard/empty-state"
+import { Heart, RefreshCw, FileText } from "lucide-react"
 
 export default function DonorDashboard() {
   const [donations, setDonations] = useState<any[]>([])
@@ -40,16 +44,17 @@ export default function DonorDashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>
+    return <DashboardLoading />
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Donor Dashboard</h1>
-        <p className="text-muted-foreground">Track your contributions, manage recurring donations, and access tax documents</p>
-      </div>
+  const isNewDonor = donations.length === 0 && recurring.length === 0
 
+  return (
+    <DashboardShell
+      title="Donor Dashboard"
+      description="Track your contributions, manage recurring donations, and access tax documents"
+      icon={Heart}
+    >
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -84,17 +89,13 @@ export default function DonorDashboard() {
         </TabsList>
 
         <TabsContent value="history">
-          <Card>
-            <CardHeader>
-              <CardTitle>Donation History</CardTitle>
-              <CardDescription>
-                {donations.length > 0
-                  ? "All your one-time and recurring donations"
-                  : "Your donation history will appear here once you make your first contribution."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {donations.length > 0 ? (
+          {donations.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Donation History</CardTitle>
+                <CardDescription>All your one-time and recurring donations</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -119,25 +120,26 @@ export default function DonorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No donations yet.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={Heart}
+              title="No donations yet"
+              description="Your donation history will appear here once you make your first contribution. Every dollar helps families access nutritious food."
+              action={{ label: "Make a donation" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="recurring">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recurring Donations</CardTitle>
-              <CardDescription>
-                {recurring.length > 0
-                  ? "Manage your recurring contributions. You can pause, resume, or cancel at any time."
-                  : "Set up a recurring donation to provide consistent support. You'll see your active subscriptions here."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recurring.length > 0 ? (
+          {recurring.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Recurring Donations</CardTitle>
+                <CardDescription>Manage your recurring contributions. You can pause, resume, or cancel at any time.</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -162,25 +164,26 @@ export default function DonorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No recurring donations set up.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={RefreshCw}
+              title="No recurring donations"
+              description="Set up a recurring donation to provide consistent, reliable support. Monthly giving helps us plan ahead and serve more families."
+              action={{ label: "Set up recurring donation" }}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="tax">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tax Documents</CardTitle>
-              <CardDescription>
-                {taxDocs.length > 0
-                  ? "Download receipts and year-end summaries for tax purposes."
-                  : "Tax receipts and year-end donation summaries will be available here for download."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {taxDocs.length > 0 ? (
+          {taxDocs.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax Documents</CardTitle>
+                <CardDescription>Download receipts and year-end summaries for tax purposes.</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -201,13 +204,17 @@ export default function DonorDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              ) : (
-                <p className="text-sm text-muted-foreground">No tax documents available yet.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title="No tax documents yet"
+              description="Tax receipts and year-end donation summaries will be generated automatically and available here for download."
+            />
+          )}
         </TabsContent>
       </Tabs>
-    </div>
+    </DashboardShell>
   )
 }
