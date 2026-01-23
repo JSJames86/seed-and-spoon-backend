@@ -135,7 +135,7 @@ export default function VolunteerDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>My Shifts</CardTitle>
-                <CardDescription>Shifts you've signed up for</CardDescription>
+                <CardDescription>Shifts you&apos;ve signed up for</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>

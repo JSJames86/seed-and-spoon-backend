@@ -163,7 +163,7 @@ export default function ClientDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>My Programs</CardTitle>
-                <CardDescription>Programs you're enrolled in or have applied to</CardDescription>
+                <CardDescription>Programs you&apos;re enrolled in or have applied to</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
