@@ -10,6 +10,7 @@ import {
   Users,
   LogOut,
   ChevronDown,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
@@ -34,9 +35,11 @@ const navItems = [
 
 interface SidebarProps {
   userRoles?: string[]
+  open?: boolean
+  onClose?: () => void
 }
 
-export function Sidebar({ userRoles = [] }: SidebarProps) {
+export function Sidebar({ userRoles = [], open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [countiesExpanded, setCountiesExpanded] = useState(
@@ -49,16 +52,31 @@ export function Sidebar({ userRoles = [] }: SidebarProps) {
     router.push("/")
   }
 
-  return (
+  function handleNavClick() {
+    if (onClose) onClose()
+  }
+
+  const sidebarContent = (
     <div className="flex h-full w-[260px] flex-col bg-ss-charcoal relative">
       {/* Brand */}
-      <div className="px-5 py-5">
-        <SeedSpoonLogo variant="light" size="md" />
-        <p className="text-gray-500 text-xs mt-1 ml-[38px]">CRM Dashboard</p>
+      <div className="flex items-center justify-between px-5 py-5">
+        <div>
+          <SeedSpoonLogo variant="light" size="md" />
+          <p className="text-gray-500 text-xs mt-1 ml-[38px]">CRM Dashboard</p>
+        </div>
+        {/* Mobile close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 mt-4 px-3">
+      <nav className="flex-1 mt-4 px-3 overflow-y-auto">
         <div className="space-y-1">
           {navItems.map((item) => {
             const isActive =
@@ -100,6 +118,7 @@ export function Sidebar({ userRoles = [] }: SidebarProps) {
                   ) : (
                     <Link
                       href={item.href}
+                      onClick={handleNavClick}
                       className={cn(
                         "flex items-center gap-3 rounded-l-2xl px-4 py-3 text-sm font-medium transition-all",
                         isActive
@@ -129,6 +148,7 @@ export function Sidebar({ userRoles = [] }: SidebarProps) {
                         <Link
                           key={child.href}
                           href={child.href}
+                          onClick={handleNavClick}
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
                             isChildActive
@@ -163,5 +183,29 @@ export function Sidebar({ userRoles = [] }: SidebarProps) {
         </button>
       </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden lg:block shrink-0">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile sidebar - overlay */}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={onClose}
+          />
+          {/* Drawer */}
+          <div className="absolute inset-y-0 left-0 w-[260px] animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   )
 }

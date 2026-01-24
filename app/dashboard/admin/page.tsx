@@ -80,11 +80,11 @@ export default function AdminCRMDashboard() {
   const displayName = userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : "Admin"
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ss-charcoal">
+          <h1 className="text-xl md:text-2xl font-bold text-ss-charcoal">
             Welcome back, {displayName}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
@@ -92,55 +92,55 @@ export default function AdminCRMDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           {/* Status Toggle */}
           <div className="flex items-center bg-white rounded-xl border border-gray-200 p-1">
             <button
               onClick={() => setViewMode("impact")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
                 viewMode === "impact"
                   ? "bg-ss-green text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <Heart className="w-4 h-4" />
+              <Heart className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Impact
             </button>
             <button
               onClick={() => setViewMode("logistics")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
                 viewMode === "logistics"
                   ? "bg-ss-green text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <Truck className="w-4 h-4" />
+              <Truck className="w-3.5 h-3.5 md:w-4 md:h-4" />
               Logistics
             </button>
           </div>
 
           {/* Date */}
-          <div className="flex items-center gap-2 bg-white rounded-xl border border-gray-200 px-4 py-2.5">
+          <div className="hidden sm:flex items-center gap-2 bg-white rounded-xl border border-gray-200 px-3 md:px-4 py-2.5">
             <CalendarDays className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-ss-charcoal font-medium">
+            <span className="text-xs md:text-sm text-ss-charcoal font-medium">
               {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </span>
           </div>
 
           {/* Search */}
-          <div className="relative">
+          <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 w-48 rounded-xl border-gray-200 bg-white"
+              className="pl-9 h-10 w-40 lg:w-48 rounded-xl border-gray-200 bg-white"
             />
           </div>
 
           {/* Add New */}
-          <Button className="bg-ss-orange hover:bg-ss-orange-dark text-white rounded-xl h-10 px-4">
-            <Plus className="w-4 h-4 mr-2" />
+          <Button className="bg-ss-orange hover:bg-ss-orange-dark text-white rounded-xl h-9 md:h-10 px-3 md:px-4 text-xs md:text-sm">
+            <Plus className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
             Add Record
           </Button>
         </div>
@@ -148,7 +148,7 @@ export default function AdminCRMDashboard() {
 
       {/* KPI Cards Row */}
       {viewMode === "impact" ? (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="rounded-bento border-white shadow-sm bg-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -230,7 +230,7 @@ export default function AdminCRMDashboard() {
           </Card>
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="rounded-bento border-white shadow-sm bg-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -319,13 +319,13 @@ export default function AdminCRMDashboard() {
             const isOnTrack = county.percentage >= 50
             return (
               <div key={county.name} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Leaf className="w-4 h-4 text-ss-green-mid" />
-                    <span className="text-sm font-semibold text-ss-charcoal">{county.name} County</span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Leaf className="w-4 h-4 text-ss-green-mid hidden sm:block" />
+                    <span className="text-xs sm:text-sm font-semibold text-ss-charcoal">{county.name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <span className="text-xs text-muted-foreground hidden sm:inline">
                       {county.delivered.toLocaleString()} / {county.goal.toLocaleString()} meals
                     </span>
                     <Badge
@@ -354,18 +354,18 @@ export default function AdminCRMDashboard() {
       {/* Recent Activity / Logistics Table */}
       <Card className="rounded-bento border-white shadow-sm bg-white">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-lg font-bold text-ss-charcoal">
+              <CardTitle className="text-base md:text-lg font-bold text-ss-charcoal">
                 {viewMode === "impact" ? "Recent Deliveries" : "Active Routes"}
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">
                 {viewMode === "impact"
                   ? "Most recent food deliveries across all counties"
                   : "Current truck routes and logistics status"}
               </p>
             </div>
-            <Button variant="outline" className="rounded-xl text-sm border-gray-200">
+            <Button variant="outline" className="rounded-xl text-xs md:text-sm border-gray-200 w-fit">
               <Eye className="w-4 h-4 mr-2" />
               View All
             </Button>
@@ -373,7 +373,8 @@ export default function AdminCRMDashboard() {
         </CardHeader>
         <CardContent>
           {viewMode === "impact" ? (
-            <Table>
+            <div className="overflow-x-auto -mx-6 px-6">
+            <Table className="min-w-[640px]">
               <TableHeader>
                 <TableRow className="border-gray-100">
                   <TableHead className="text-xs font-semibold text-muted-foreground uppercase">ID</TableHead>
@@ -420,8 +421,10 @@ export default function AdminCRMDashboard() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto -mx-6 px-6">
+            <Table className="min-w-[540px]">
               <TableHeader>
                 <TableRow className="border-gray-100">
                   <TableHead className="text-xs font-semibold text-muted-foreground uppercase">ID</TableHead>
@@ -458,6 +461,7 @@ export default function AdminCRMDashboard() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
