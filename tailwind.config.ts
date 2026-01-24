@@ -56,11 +56,26 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Seed & Spoon Brand Colors
+        "ss-green": {
+          DEFAULT: "#4FAF3B",
+          light: "#A6D47A",
+          mid: "#6FBF3C",
+          dark: "#3D8A2E",
+        },
+        "ss-orange": {
+          DEFAULT: "#E86A1D",
+          light: "#F09050",
+          dark: "#C45518",
+        },
+        "ss-charcoal": "#1A1A1A",
+        "ss-cream": "#F8F6F0",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        bento: "2rem",
       },
     },
   },

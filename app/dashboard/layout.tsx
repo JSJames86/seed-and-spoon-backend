@@ -1,24 +1,9 @@
 "use client"
 
 import { Sidebar } from "@/components/sidebar"
-import { useEffect, useState, createContext, useContext } from "react"
+import { useEffect, useState } from "react"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
-
-interface DashboardContextValue {
-  userRoles: string[]
-  userName: string | null
-  isLoading: boolean
-}
-
-const DashboardContext = createContext<DashboardContextValue>({
-  userRoles: [],
-  userName: null,
-  isLoading: true,
-})
-
-export function useDashboardContext() {
-  return useContext(DashboardContext)
-}
+import { DashboardContext } from "@/lib/dashboard-context"
 
 export default function DashboardLayout({
   children,
@@ -44,7 +29,6 @@ export default function DashboardLayout({
             setUserRoles(json.data.roles.map((r: any) => r.name))
           }
         } catch {
-          // Fallback to profile role if roles endpoint not available
           const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -56,7 +40,6 @@ export default function DashboardLayout({
           }
         }
 
-        // Get user display name from email
         setUserName(session.user.email?.split('@')[0] || null)
       }
       setIsLoading(false)
@@ -66,9 +49,9 @@ export default function DashboardLayout({
 
   return (
     <DashboardContext.Provider value={{ userRoles, userName, isLoading }}>
-      <div className="flex h-screen">
+      <div className="flex h-screen bg-ss-cream">
         <Sidebar userRoles={userRoles} />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
       </div>

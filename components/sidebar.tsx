@@ -4,49 +4,33 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
-  Database,
-  CreditCard,
+  MapPin,
+  Building2,
+  Package,
   Users,
-  Heart,
-  Briefcase,
-  Gavel,
-  Shield,
-  Home,
-  ClipboardList,
   LogOut,
+  ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { ROLE_CONFIG, type UserRole } from "@/lib/dashboard-config"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
+import { SeedSpoonLogo } from "@/components/seed-spoon-logo"
+import { useState } from "react"
 
-// Navigation items organized by role
-const roleNavItems: Record<string, { title: string; href: string; icon: any; description?: string }[]> = {
-  admin: [
-    { title: "Overview", href: "/dashboard", icon: LayoutDashboard, description: "System overview" },
-    { title: "CRM Admin", href: "/dashboard/admin", icon: Shield, description: "Manage roles, programs, staff" },
-    { title: "Database", href: "/dashboard/database", icon: Database, description: "View Supabase data" },
-    { title: "Stripe", href: "/dashboard/stripe", icon: CreditCard, description: "Payment data" },
-  ],
-  client: [
-    { title: "My Dashboard", href: "/dashboard/client", icon: Home, description: "Household & programs" },
-  ],
-  donor: [
-    { title: "Donor Dashboard", href: "/dashboard/donor", icon: Heart, description: "Donations & impact" },
-  ],
-  volunteer: [
-    { title: "Volunteer Hub", href: "/dashboard/volunteer", icon: Users, description: "Shifts & hours" },
-  ],
-  employee: [
-    { title: "Employee Portal", href: "/dashboard/employee", icon: Briefcase, description: "Schedule & trainings" },
-  ],
-  board_member: [
-    { title: "Board Portal", href: "/dashboard/board", icon: Gavel, description: "Meetings & governance" },
-  ],
-  executive_director: [
-    { title: "ED Dashboard", href: "/dashboard/director", icon: ClipboardList, description: "Org oversight" },
-  ],
-}
+const counties = [
+  { name: "Essex", href: "/dashboard/counties/essex" },
+  { name: "Hudson", href: "/dashboard/counties/hudson" },
+  { name: "Union", href: "/dashboard/counties/union" },
+  { name: "Bergen", href: "/dashboard/counties/bergen" },
+  { name: "Passaic", href: "/dashboard/counties/passaic" },
+]
+
+const navItems = [
+  { title: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
+  { title: "Counties", href: "/dashboard/counties", icon: MapPin, children: counties },
+  { title: "Site Partners", href: "/dashboard/sites", icon: Building2 },
+  { title: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { title: "Volunteers", href: "/dashboard/volunteers", icon: Users },
+]
 
 interface SidebarProps {
   userRoles?: string[]
@@ -55,129 +39,126 @@ interface SidebarProps {
 export function Sidebar({ userRoles = [] }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-
-  // Build nav items based on user roles
-  const navItems = (() => {
-    const items: { title: string; href: string; icon: any; description?: string }[] = []
-    const seen = new Set<string>()
-
-    for (const role of userRoles) {
-      const roleItems = roleNavItems[role] || []
-      for (const item of roleItems) {
-        if (!seen.has(item.href)) {
-          seen.add(item.href)
-          items.push(item)
-        }
-      }
-    }
-
-    // If no roles matched, show default overview
-    if (items.length === 0) {
-      items.push({ title: "Overview", href: "/dashboard", icon: LayoutDashboard })
-    }
-
-    return items
-  })()
-
-  const hasMultipleRoles = userRoles.length > 1
+  const [countiesExpanded, setCountiesExpanded] = useState(
+    pathname?.startsWith("/dashboard/counties") ?? false
+  )
 
   async function handleSignOut() {
     const supabase = getSupabaseClient()
     await supabase.auth.signOut()
-    router.push('/')
+    router.push("/")
   }
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-muted/40">
+    <div className="flex h-full w-[260px] flex-col bg-ss-charcoal relative">
       {/* Brand */}
-      <div className="flex h-14 items-center border-b px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <span>Seed & Spoon</span>
-        </Link>
+      <div className="px-5 py-5">
+        <SeedSpoonLogo variant="light" size="md" />
+        <p className="text-gray-500 text-xs mt-1 ml-[38px]">CRM Dashboard</p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-auto p-3">
-        {hasMultipleRoles ? (
-          <div className="space-y-4">
-            {userRoles.map((role) => {
-              const items = roleNavItems[role] || []
-              if (items.length === 0) return null
-              const config = ROLE_CONFIG[role as UserRole]
-              return (
-                <div key={role}>
-                  <p className="px-3 mb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {config?.label || role}
-                  </p>
-                  <div className="space-y-0.5">
-                    {items.map((item) => {
-                      const isActive = pathname === item.href || (pathname?.startsWith(item.href + "/") ?? false)
+      <nav className="flex-1 mt-4 px-3">
+        <div className="space-y-1">
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard/admin" && pathname?.startsWith(item.href + "/"))
+            const hasChildren = item.children && item.children.length > 0
+            const isCountiesItem = item.title === "Counties"
+
+            return (
+              <div key={item.href}>
+                {/* Nav Item with Inverted Corner Effect */}
+                <div className="relative">
+                  {/* Top inverted corner */}
+                  {isActive && (
+                    <div className="absolute -top-3 right-0 w-3 h-3 bg-ss-cream">
+                      <div className="absolute inset-0 bg-ss-charcoal rounded-br-xl" />
+                    </div>
+                  )}
+
+                  {isCountiesItem ? (
+                    <button
+                      onClick={() => setCountiesExpanded(!countiesExpanded)}
+                      className={cn(
+                        "flex items-center gap-3 w-full rounded-l-2xl px-4 py-3 text-sm font-medium transition-all",
+                        isActive
+                          ? "bg-ss-cream text-ss-green rounded-r-none ml-2"
+                          : "text-gray-400 hover:text-white"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-ss-green")} />
+                      <span className="flex-1 text-left">{item.title}</span>
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform",
+                          countiesExpanded && "rotate-180"
+                        )}
+                      />
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-l-2xl px-4 py-3 text-sm font-medium transition-all",
+                        isActive
+                          ? "bg-ss-cream text-ss-green rounded-r-none ml-2"
+                          : "text-gray-400 hover:text-white"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-ss-green")} />
+                      <span>{item.title}</span>
+                    </Link>
+                  )}
+
+                  {/* Bottom inverted corner */}
+                  {isActive && (
+                    <div className="absolute -bottom-3 right-0 w-3 h-3 bg-ss-cream">
+                      <div className="absolute inset-0 bg-ss-charcoal rounded-tr-xl" />
+                    </div>
+                  )}
+                </div>
+
+                {/* County Sub-items */}
+                {hasChildren && countiesExpanded && (
+                  <div className="ml-8 mt-1 space-y-0.5">
+                    {item.children!.map((child) => {
+                      const isChildActive = pathname === child.href
                       return (
                         <Link
-                          key={item.href}
-                          href={item.href}
+                          key={child.href}
+                          href={child.href}
                           className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                            isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                            isChildActive
+                              ? "text-ss-green bg-ss-green/10"
+                              : "text-gray-500 hover:text-gray-300"
                           )}
                         >
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                          <div className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            isChildActive ? "bg-ss-green" : "bg-gray-600"
+                          )} />
+                          {child.name}
                         </Link>
                       )
                     })}
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="space-y-0.5">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || (pathname?.startsWith(item.href + "/") ?? false)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="truncate block">{item.title}</span>
-                    {item.description && !isActive && (
-                      <span className="text-xs text-muted-foreground/70 truncate block">{item.description}</span>
-                    )}
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
+                )}
+              </div>
+            )
+          })}
+        </div>
       </nav>
 
       {/* Footer */}
-      <div className="border-t p-3 space-y-2">
-        {userRoles.length > 0 && (
-          <div className="flex flex-wrap gap-1 px-1">
-            {userRoles.map((role) => (
-              <Badge key={role} variant="secondary" className="text-[10px] px-1.5 py-0">
-                {ROLE_CONFIG[role as UserRole]?.label || role}
-              </Badge>
-            ))}
-          </div>
-        )}
+      <div className="px-4 py-4 border-t border-gray-800">
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-5 w-5" />
           Sign out
         </button>
       </div>

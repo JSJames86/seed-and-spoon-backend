@@ -8,7 +8,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { WelcomeHeader, GettingStarted } from "@/components/dashboard/welcome-header"
 import { DashboardLoading } from "@/components/dashboard/loading-skeleton"
 import { ROLE_CONFIG, getPrimaryRole, type UserRole } from "@/lib/dashboard-config"
-import { useDashboardContext } from "./layout"
+import { useDashboardContext } from "@/lib/dashboard-context"
 import { ArrowRight, LayoutDashboard } from "lucide-react"
 
 export default function DashboardPage() {
