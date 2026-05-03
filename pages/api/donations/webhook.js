@@ -20,6 +20,84 @@ async function buffer(readable) {
   return Buffer.concat(chunks)
 }
 
+/**
+ * Look up a donor by email address. Returns null if not found.
+ */
+async function findDonorByEmail(email) {
+  if (!email) return null
+  const { data } = await supabase
+    .from('donors')
+    .select('id')
+    .eq('email', email.toLowerCase())
+    .single()
+  return data || null
+}
+
+/**
+ * After a successful payment, create a gift record and queue an acknowledgment.
+ * Skips silently if a gift already exists for this donation (idempotency).
+ */
+async function createGiftFromPayment(donationId, paymentIntent) {
+  const amount = paymentIntent.amount / 100
+  const receiptEmail = paymentIntent.receipt_email
+  const giftDate = new Date(paymentIntent.created * 1000).toISOString().split('T')[0]
+  const campaignId = paymentIntent.metadata?.campaign_id || null
+
+  const donor = await findDonorByEmail(receiptEmail)
+  if (!donor) {
+    // No donor profile yet — gift cannot be attributed. The staff can link
+    // it manually after creating a donor record.
+    console.log(`Webhook: no donor profile for ${receiptEmail}, skipping gift creation`)
+    return
+  }
+
+  // Idempotency: skip if a gift already references this donation
+  const { data: existing } = await supabase
+    .from('gifts')
+    .select('id')
+    .eq('donation_id', donationId)
+    .single()
+
+  if (existing) {
+    console.log(`Webhook: gift already exists for donation ${donationId}`)
+    return
+  }
+
+  const { data: gift, error: giftErr } = await supabase
+    .from('gifts')
+    .insert([{
+      donor_id: donor.id,
+      donation_id: donationId,
+      campaign_id: campaignId,
+      amount,
+      currency: (paymentIntent.currency || 'usd').toUpperCase(),
+      gift_date: giftDate,
+      payment_method: 'stripe',
+      acknowledgment_status: 'pending',
+    }])
+    .select()
+    .single()
+
+  if (giftErr) {
+    console.error('Webhook: failed to create gift record:', giftErr)
+    return
+  }
+
+  // Queue a pending acknowledgment (required for gifts >= $250 under IRS rules)
+  const { error: ackErr } = await supabase.from('acknowledgments').insert([{
+    gift_id: gift.id,
+    donor_id: donor.id,
+    status: 'pending',
+    irs_compliant: false,
+  }])
+
+  if (ackErr) {
+    console.error('Webhook: failed to queue acknowledgment:', ackErr)
+  } else {
+    console.log(`Webhook: gift ${gift.id} created and acknowledgment queued for donor ${donor.id}`)
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST'])
@@ -44,25 +122,33 @@ export default async function handler(req, res) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object
 
-        // Log donation to Supabase
-        const { error } = await supabase.from('donations').insert([
-          {
-            stripe_payment_intent_id: paymentIntent.id,
-            amount: paymentIntent.amount / 100, // Convert from cents
-            currency: paymentIntent.currency,
-            donor_email: paymentIntent.receipt_email,
-            status: 'succeeded',
-            metadata: paymentIntent.metadata,
-            created_at: new Date(paymentIntent.created * 1000).toISOString(),
-          },
-        ])
+        // Upsert the donation record (may already exist from /donations/create)
+        const { data: donation, error } = await supabase
+          .from('donations')
+          .upsert(
+            [{
+              stripe_payment_intent_id: paymentIntent.id,
+              amount: paymentIntent.amount / 100,
+              currency: paymentIntent.currency,
+              donor_email: paymentIntent.receipt_email,
+              status: 'succeeded',
+              metadata: paymentIntent.metadata,
+              created_at: new Date(paymentIntent.created * 1000).toISOString(),
+            }],
+            { onConflict: 'stripe_payment_intent_id' }
+          )
+          .select('id')
+          .single()
 
         if (error) {
-          console.error('Error logging donation:', error)
+          console.error('Webhook: error upserting donation:', error)
           return res.status(500).json({ error: 'Failed to log donation' })
         }
 
-        console.log('Donation logged successfully:', paymentIntent.id)
+        console.log('Webhook: donation logged successfully:', paymentIntent.id)
+
+        // Create gift record + queue acknowledgment for donor CRM
+        await createGiftFromPayment(donation.id, paymentIntent)
         break
       }
 
@@ -83,7 +169,7 @@ export default async function handler(req, res) {
         ])
 
         if (error) {
-          console.error('Error logging failed donation:', error)
+          console.error('Webhook: error logging failed donation:', error)
         }
         break
       }
