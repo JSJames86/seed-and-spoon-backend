@@ -211,7 +211,7 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-12">
             <SeedSpoonLogo variant="light" size="lg" />
-            <p className="text-white/70 text-sm mt-1 ml-[52px]">Community Resource Manager</p>
+            <p className="text-white/70 text-sm mt-1">Community Resource Manager</p>
           </div>
 
           <h2 className="text-5xl font-bold leading-tight mb-6 max-w-lg">
