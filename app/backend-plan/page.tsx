@@ -325,15 +325,15 @@ export default function BackendPlan() {
       style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
     >
       {/* Header */}
-      <div className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+      <div className="border-b border-slate-800 px-4 py-3 sm:px-6 sm:py-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="text-xl">🌱</span>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wider">SEED & SPOON — BACKEND PLAN</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Next.js · Supabase · Bun · Vercel · shadcn/ui</p>
+            <p className="text-xs text-slate-500 mt-0.5 hidden sm:block">Next.js · Supabase · Bun · Vercel · shadcn/ui</p>
           </div>
         </div>
-        <div className="flex gap-2 text-xs">
+        <div className="flex flex-wrap gap-2 text-xs">
           <span className="px-2 py-1 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
             {counts.done} done
           </span>
@@ -347,12 +347,12 @@ export default function BackendPlan() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-slate-800 px-6 flex">
+      <div className="border-b border-slate-800 px-4 sm:px-6 flex overflow-x-auto">
         {(["overview", "modules", "roadmap"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs uppercase tracking-widest border-b-2 transition-colors ${
+            className={`px-4 py-2.5 text-xs uppercase tracking-wide sm:tracking-widest border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab
                 ? "border-emerald-400 text-emerald-400"
                 : "border-transparent text-slate-500 hover:text-slate-300"
@@ -363,7 +363,7 @@ export default function BackendPlan() {
         ))}
       </div>
 
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto">
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-5">
@@ -522,8 +522,8 @@ export default function BackendPlan() {
                 </button>
 
                 {selectedModule === mod.id && (
-                  <div className="border-t border-slate-800 p-4 grid md:grid-cols-3 gap-4 text-xs">
-                    <div>
+                  <div className="border-t border-slate-800 p-3 sm:p-4 grid sm:grid-cols-3 divide-y divide-slate-800 sm:divide-y-0 text-xs">
+                    <div className="py-3 sm:py-0 sm:pr-4">
                       <h4 className="text-emerald-400 font-bold uppercase tracking-wide mb-2">✓ Exists</h4>
                       <ul className="space-y-1.5">
                         {mod.existing.map((e) => (
@@ -534,7 +534,7 @@ export default function BackendPlan() {
                         ))}
                       </ul>
                     </div>
-                    <div>
+                    <div className="py-3 sm:py-0 sm:px-4">
                       <h4 className="text-rose-400 font-bold uppercase tracking-wide mb-2">✗ Gaps</h4>
                       <ul className="space-y-1.5">
                         {mod.gaps.map((g) => (
@@ -545,7 +545,7 @@ export default function BackendPlan() {
                         ))}
                       </ul>
                     </div>
-                    <div>
+                    <div className="py-3 sm:py-0 sm:pl-4">
                       <h4 className="text-blue-400 font-bold uppercase tracking-wide mb-2">→ Todos</h4>
                       <ul className="space-y-1.5">
                         {mod.todos.map((t) => (
@@ -628,12 +628,12 @@ export default function BackendPlan() {
                 <h3 className={`text-xs font-bold uppercase tracking-wider ${head} mb-3`}>{label}</h3>
                 <div className="space-y-2">
                   {items.map(([task, effort]) => (
-                    <div key={task} className="flex justify-between gap-4 text-xs">
-                      <div className="flex gap-2 text-slate-400">
+                    <div key={task} className="flex justify-between gap-3 text-xs">
+                      <div className="flex gap-2 text-slate-400 min-w-0">
                         <span className="text-slate-600 shrink-0">□</span>
-                        {task}
+                        <span>{task}</span>
                       </div>
-                      <span className="text-slate-600 shrink-0 tabular-nums">{effort}</span>
+                      <span className="text-slate-600 shrink-0 tabular-nums pl-1">{effort}</span>
                     </div>
                   ))}
                 </div>

@@ -89,9 +89,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side — form panel */}
-      <div className="w-full lg:w-[45%] flex flex-col bg-[#F4F3EF] px-10 py-10 relative">
+      <div className="w-full lg:w-[45%] flex flex-col bg-[#F4F3EF] px-6 py-8 sm:px-10 sm:py-10 relative">
         {/* Brand badge */}
-        <div className="mb-10">
+        <div className="mb-6 sm:mb-10">
           <div className="inline-block border border-gray-300 rounded-xl px-4 py-2 bg-white shadow-sm">
             <SeedSpoonLogo size="sm" />
           </div>
@@ -188,7 +188,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-8 mt-auto max-w-sm w-full mx-auto">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-8 mt-auto max-w-sm w-full mx-auto">
           <p className="text-xs text-gray-500">
             New here?{" "}
             <a href="#" className="text-ss-charcoal font-medium hover:underline">
