@@ -93,7 +93,8 @@ function fmtAmount(v: string | number) {
 }
 
 export default function DonorRecordPage() {
-  const { id } = useParams<{ id: string }>()
+  const params = useParams()
+  const id = params?.id as string
   const router = useRouter()
 
   const [donor, setDonor] = useState<Donor | null>(null)
@@ -105,9 +106,8 @@ export default function DonorRecordPage() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [form, setForm] = useState<Partial<Donor>>({})
 
-  useEffect(() => {
-    loadDonor()
-  }, [id])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadDonor() }, [id])
 
   async function getAuthHeaders() {
     const supabase = getSupabaseClient()

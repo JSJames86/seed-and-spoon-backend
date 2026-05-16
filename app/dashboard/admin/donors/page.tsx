@@ -43,9 +43,8 @@ export default function DonorsListPage() {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all")
 
-  useEffect(() => {
-    loadDonors()
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { loadDonors() }, [])
 
   async function loadDonors() {
     setLoading(true)
