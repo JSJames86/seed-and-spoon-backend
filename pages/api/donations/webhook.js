@@ -123,6 +123,10 @@ export default async function handler(req, res) {
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object
 
+        // Resolve donor_id so the donations→donors FK is populated.
+        // Without this the admin donor list join returns empty donation arrays.
+        const donor = await findDonorByEmail(paymentIntent.receipt_email)
+
         // Upsert the donation record (may already exist from /donations/create)
         const { data: donation, error } = await supabase
           .from('donations')
@@ -132,6 +136,7 @@ export default async function handler(req, res) {
               amount: paymentIntent.amount / 100,
               currency: paymentIntent.currency,
               donor_email: paymentIntent.receipt_email,
+              donor_id: donor?.id ?? null,
               status: 'succeeded',
               metadata: paymentIntent.metadata,
               created_at: new Date(paymentIntent.created * 1000).toISOString(),
