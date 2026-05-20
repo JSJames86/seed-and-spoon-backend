@@ -3,7 +3,6 @@
  * GET: Returns all active roles for the authenticated user
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -14,7 +13,7 @@ async function handler(req, res) {
   try {
     const userId = getUserId(req)
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('role_assignments')
       .select('*, roles(name, description)')
       .eq('profile_id', userId)

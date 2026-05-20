@@ -4,7 +4,6 @@
  * POST: Submit a new report
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -17,7 +16,7 @@ async function handleGet(req, res) {
   const userId = getUserId(req)
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('client_reports')
       .select('*')
       .eq('reporter_id', userId)
@@ -44,7 +43,7 @@ async function handlePost(req, res) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('client_reports')
       .insert({
         reporter_id: userId,

@@ -4,7 +4,6 @@
  * POST: Join a group via QR token
  */
 import { requireAuth, getUserEmail } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -20,7 +19,7 @@ async function handleGet(req, res) {
   try {
     if (token) {
       // Look up group by QR token
-      const { data, error } = await supabase
+      const { data, error } = await req.supabase
         .from('volunteer_groups')
         .select('id, name, group_type, contact_name')
         .eq('qr_code_token', token)
@@ -34,7 +33,7 @@ async function handleGet(req, res) {
     }
 
     // Get volunteer's memberships
-    const { data: volunteer } = await supabase
+    const { data: volunteer } = await req.supabase
       .from('volunteers')
       .select('id')
       .eq('email', email)
@@ -42,7 +41,7 @@ async function handleGet(req, res) {
 
     if (!volunteer) return sendSuccess(res, [])
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('volunteer_memberships')
       .select('*, volunteer_groups(name, group_type)')
       .eq('volunteer_id', volunteer.id)
@@ -65,7 +64,7 @@ async function handlePost(req, res) {
 
   try {
     // Get volunteer
-    const { data: volunteer } = await supabase
+    const { data: volunteer } = await req.supabase
       .from('volunteers')
       .select('id')
       .eq('email', email)
@@ -76,7 +75,7 @@ async function handlePost(req, res) {
     }
 
     // Find group by token
-    const { data: group } = await supabase
+    const { data: group } = await req.supabase
       .from('volunteer_groups')
       .select('id')
       .eq('qr_code_token', token)
@@ -88,7 +87,7 @@ async function handlePost(req, res) {
     }
 
     // Join group
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('volunteer_memberships')
       .upsert({
         volunteer_id: volunteer.id,

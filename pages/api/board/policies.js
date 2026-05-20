@@ -2,9 +2,7 @@
  * Board Policies API (self-service view)
  * GET: View policies accessible to the user's roles
  */
-import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { getUserRoles } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
+import { requireAuth, getUserId, getUserRoles } from '../../../lib/authMiddleware'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -26,7 +24,7 @@ async function handler(req, res) {
       visibilityLevels.push('board_only')
     }
 
-    let query = supabase
+    let query = req.supabase
       .from('policies')
       .select('*')
       .in('visibility', visibilityLevels)

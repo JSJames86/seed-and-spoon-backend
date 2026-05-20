@@ -5,7 +5,6 @@
  * PUT: Update (pause/resume/cancel) a recurring donation
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -19,7 +18,7 @@ async function handleGet(req, res) {
   const userId = getUserId(req)
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('recurring_donations')
       .select('*, donors(name, email)')
       .eq('profile_id', userId)
@@ -46,7 +45,7 @@ async function handlePost(req, res) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('recurring_donations')
       .insert({
         donor_id,
@@ -89,7 +88,7 @@ async function handlePut(req, res) {
       return Errors.invalidInput(res, 'action must be pause, resume, or cancel')
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('recurring_donations')
       .update(updates)
       .eq('id', id)

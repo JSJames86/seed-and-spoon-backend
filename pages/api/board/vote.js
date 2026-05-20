@@ -3,7 +3,6 @@
  * POST: Cast a vote
  */
 import { requireAnyRole, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -25,7 +24,7 @@ async function handler(req, res) {
 
   try {
     // Check that the vote is still open
-    const { data: boardVote } = await supabase
+    const { data: boardVote } = await req.supabase
       .from('board_votes')
       .select('status')
       .eq('id', vote_id)
@@ -36,7 +35,7 @@ async function handler(req, res) {
     }
 
     // Cast vote (upsert to allow changing vote while open)
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('vote_records')
       .upsert({
         vote_id,

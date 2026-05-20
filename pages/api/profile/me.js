@@ -9,7 +9,6 @@
  * Security: Requires authentication (any role)
  */
 
-import { supabase } from '../../../lib/supabaseClient'
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
 
 async function handler(req, res) {
@@ -43,7 +42,7 @@ async function getProfile(req, res) {
     }
 
     // Profile is already loaded by middleware, but we can fetch additional data
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await req.supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -107,7 +106,7 @@ async function updateProfile(req, res) {
 
     updates.updated_at = new Date().toISOString()
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('profiles')
       .update(updates)
       .eq('id', userId)

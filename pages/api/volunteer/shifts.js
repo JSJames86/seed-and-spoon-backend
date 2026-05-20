@@ -4,7 +4,6 @@
  * POST: Sign up for a shift
  */
 import { requireAuth, getUserId, getUserEmail } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -20,7 +19,7 @@ async function handleGet(req, res) {
   try {
     if (view === 'mine') {
       // Get volunteer record
-      const { data: volunteer } = await supabase
+      const { data: volunteer } = await req.supabase
         .from('volunteers')
         .select('id')
         .eq('email', email)
@@ -28,7 +27,7 @@ async function handleGet(req, res) {
 
       if (!volunteer) return sendSuccess(res, [])
 
-      const { data, error } = await supabase
+      const { data, error } = await req.supabase
         .from('shift_signups')
         .select('*, shifts(*)')
         .eq('volunteer_id', volunteer.id)
@@ -39,7 +38,7 @@ async function handleGet(req, res) {
     }
 
     // Available shifts
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('shifts')
       .select('*, food_banks(name)')
       .eq('status', 'open')
@@ -63,7 +62,7 @@ async function handlePost(req, res) {
 
   try {
     // Get volunteer record
-    const { data: volunteer } = await supabase
+    const { data: volunteer } = await req.supabase
       .from('volunteers')
       .select('id')
       .eq('email', email)
@@ -73,7 +72,7 @@ async function handlePost(req, res) {
       return res.status(400).json({ success: false, error: 'No volunteer record found. Please sign up as a volunteer first.' })
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('shift_signups')
       .insert({
         shift_id,

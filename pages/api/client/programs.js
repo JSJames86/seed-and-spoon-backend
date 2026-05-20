@@ -4,7 +4,6 @@
  * POST: Apply/enroll in a program
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -20,7 +19,7 @@ async function handleGet(req, res) {
   try {
     if (view === 'enrolled') {
       // Get user's enrollments
-      const { data, error } = await supabase
+      const { data, error } = await req.supabase
         .from('program_enrollments')
         .select('*, programs(*)')
         .eq('profile_id', userId)
@@ -31,7 +30,7 @@ async function handleGet(req, res) {
     }
 
     // List active programs
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('programs')
       .select('*')
       .eq('status', 'active')
@@ -54,13 +53,13 @@ async function handlePost(req, res) {
 
   try {
     // Get household if exists
-    const { data: household } = await supabase
+    const { data: household } = await req.supabase
       .from('households')
       .select('id')
       .eq('primary_contact_id', userId)
       .single()
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('program_enrollments')
       .insert({
         program_id,

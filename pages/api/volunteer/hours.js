@@ -8,7 +8,6 @@
  * Security: Requires 'volunteer' role
  */
 
-import { supabase } from '../../../lib/supabaseClient'
 import { requireRole, getUserId } from '../../../lib/authMiddleware'
 
 async function handler(req, res) {
@@ -39,7 +38,7 @@ async function getMyHours(req, res) {
     }
 
     // Get volunteer record
-    const { data: volunteer, error: volunteerError } = await supabase
+    const { data: volunteer, error: volunteerError } = await req.supabase
       .from('volunteers')
       .select('*')
       .eq('user_id', userId)
@@ -54,7 +53,7 @@ async function getMyHours(req, res) {
     }
 
     // Build query for volunteer hours
-    let hoursQuery = supabase
+    let hoursQuery = req.supabase
       .from('volunteer_hours')
       .select('*')
       .eq('volunteer_id', volunteer.id)
@@ -82,7 +81,7 @@ async function getMyHours(req, res) {
     }
 
     // Get upcoming events/tasks
-    const { data: tasks, error: tasksError } = await supabase
+    const { data: tasks, error: tasksError } = await req.supabase
       .from('volunteer_tasks')
       .select('*')
       .eq('volunteer_id', volunteer.id)

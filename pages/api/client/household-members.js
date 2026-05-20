@@ -5,7 +5,6 @@
  * DELETE: Remove a household member
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -20,7 +19,7 @@ async function handleGet(req, res) {
 
   try {
     // First get the household
-    const { data: household, error: hError } = await supabase
+    const { data: household, error: hError } = await req.supabase
       .from('households')
       .select('id')
       .eq('primary_contact_id', userId)
@@ -30,7 +29,7 @@ async function handleGet(req, res) {
       return sendSuccess(res, [])
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('household_members')
       .select('*')
       .eq('household_id', household.id)
@@ -53,7 +52,7 @@ async function handlePost(req, res) {
 
   try {
     // Get household
-    const { data: household, error: hError } = await supabase
+    const { data: household, error: hError } = await req.supabase
       .from('households')
       .select('id')
       .eq('primary_contact_id', userId)
@@ -70,7 +69,7 @@ async function handlePost(req, res) {
       is_minor = age < 18
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('household_members')
       .insert({
         household_id: household.id,
@@ -100,7 +99,7 @@ async function handleDelete(req, res) {
 
   try {
     // Verify ownership through household
-    const { data: household } = await supabase
+    const { data: household } = await req.supabase
       .from('households')
       .select('id')
       .eq('primary_contact_id', userId)
@@ -110,7 +109,7 @@ async function handleDelete(req, res) {
       return Errors.forbidden(res)
     }
 
-    const { error } = await supabase
+    const { error } = await req.supabase
       .from('household_members')
       .delete()
       .eq('id', member_id)

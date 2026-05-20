@@ -3,7 +3,6 @@
  * GET: List donor's tax documents
  */
 import { requireAuth, getUserId, getUserEmail } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -17,7 +16,7 @@ async function handler(req, res) {
 
   try {
     // Find the donor record for this user
-    const { data: donor, error: donorError } = await supabase
+    const { data: donor, error: donorError } = await req.supabase
       .from('donors')
       .select('id')
       .eq('email', email)
@@ -27,7 +26,7 @@ async function handler(req, res) {
       return sendSuccess(res, [])
     }
 
-    let query = supabase
+    let query = req.supabase
       .from('tax_documents')
       .select('*')
       .eq('donor_id', donor.id)

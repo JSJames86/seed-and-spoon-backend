@@ -5,7 +5,6 @@
  * PUT: Update household preferences
  */
 import { requireAuth, getUserId, hasAnyRole } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -19,7 +18,7 @@ async function handleGet(req, res) {
   const userId = getUserId(req)
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('households')
       .select('*, household_members(*)')
       .eq('primary_contact_id', userId)
@@ -40,7 +39,7 @@ async function handlePost(req, res) {
   const { name, address, city, state, zip_code, phone, preferred_contact_method, delivery_preference, delivery_address, dietary_restrictions } = req.body
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('households')
       .insert({
         primary_contact_id: userId,
@@ -70,7 +69,7 @@ async function handlePut(req, res) {
   const { name, address, city, state, zip_code, phone, preferred_contact_method, delivery_preference, delivery_address, dietary_restrictions } = req.body
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('households')
       .update({
         name,

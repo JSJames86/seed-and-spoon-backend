@@ -3,7 +3,6 @@
  * GET: Get own employee record, schedule, trainings, documents
  */
 import { requireAuth, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -16,7 +15,7 @@ async function handler(req, res) {
 
   try {
     // Get employee record
-    const { data: employee, error } = await supabase
+    const { data: employee, error } = await req.supabase
       .from('employees')
       .select('*')
       .eq('profile_id', userId)
@@ -29,7 +28,7 @@ async function handler(req, res) {
     const result = { employee }
 
     if (include === 'schedule' || !include) {
-      const { data: schedules } = await supabase
+      const { data: schedules } = await req.supabase
         .from('employee_schedules')
         .select('*')
         .eq('employee_id', employee.id)
@@ -40,14 +39,14 @@ async function handler(req, res) {
     }
 
     if (include === 'trainings' || !include) {
-      const { data: completions } = await supabase
+      const { data: completions } = await req.supabase
         .from('training_completions')
         .select('*, trainings(*)')
         .eq('employee_id', employee.id)
         .order('completed_at', { ascending: false })
 
       // Also get required trainings not yet completed
-      const { data: allTrainings } = await supabase
+      const { data: allTrainings } = await req.supabase
         .from('trainings')
         .select('*')
         .eq('is_required', true)
@@ -57,7 +56,7 @@ async function handler(req, res) {
     }
 
     if (include === 'documents' || !include) {
-      const { data: docs } = await supabase
+      const { data: docs } = await req.supabase
         .from('employee_documents')
         .select('*')
         .or(`employee_id.eq.${employee.id},is_org_wide.eq.true`)

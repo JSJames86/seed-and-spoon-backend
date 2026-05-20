@@ -8,7 +8,6 @@
  * Security: Requires 'client' role
  */
 
-import { supabase } from '../../../lib/supabaseClient'
 import { requireRole, getUserId } from '../../../lib/authMiddleware'
 
 async function handler(req, res) {
@@ -38,7 +37,7 @@ async function getMyIntake(req, res) {
     }
 
     // Get client intake data - only their own records
-    const { data: intakes, error: intakeError } = await supabase
+    const { data: intakes, error: intakeError } = await req.supabase
       .from('client_intakes')
       .select('*')
       .eq('user_id', userId)
@@ -53,7 +52,7 @@ async function getMyIntake(req, res) {
     }
 
     // Get client's associated services/programs if available
-    const { data: services, error: servicesError } = await supabase
+    const { data: services, error: servicesError } = await req.supabase
       .from('client_services')
       .select('*, food_banks(name, address, city)')
       .eq('user_id', userId)

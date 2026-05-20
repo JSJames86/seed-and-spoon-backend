@@ -3,7 +3,6 @@
  * GET: View upcoming meetings, agendas, and own attendance
  */
 import { requireAnyRole, getUserId } from '../../../lib/authMiddleware'
-import { supabase } from '../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../lib/errorResponses'
 
 async function handler(req, res) {
@@ -17,7 +16,7 @@ async function handler(req, res) {
   try {
     if (meeting_id) {
       // Get specific meeting with agendas and votes
-      const { data, error } = await supabase
+      const { data, error } = await req.supabase
         .from('board_meetings')
         .select('*, meeting_agendas(*, board_votes(*))')
         .eq('id', meeting_id)
@@ -28,7 +27,7 @@ async function handler(req, res) {
     }
 
     // List meetings
-    const { data, error } = await supabase
+    const { data, error } = await req.supabase
       .from('board_meetings')
       .select('*, meeting_attendance!inner(status)')
       .eq('meeting_attendance.member_id', userId)
@@ -36,7 +35,7 @@ async function handler(req, res) {
 
     if (error) {
       // Fallback: if no attendance records, just list all meetings
-      const { data: allMeetings, error: allError } = await supabase
+      const { data: allMeetings, error: allError } = await req.supabase
         .from('board_meetings')
         .select('*')
         .order('scheduled_at', { ascending: false })

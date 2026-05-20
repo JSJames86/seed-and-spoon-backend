@@ -8,7 +8,6 @@
  * Security: Requires 'donor' role
  */
 
-import { supabase } from '../../../lib/supabaseClient'
 import { requireRole, getUserEmail, canAccessResource } from '../../../lib/authMiddleware'
 
 async function handler(req, res) {
@@ -39,7 +38,7 @@ async function getMyDonations(req, res) {
     }
 
     // Build query to get donations for this donor only
-    let query = supabase
+    let query = req.supabase
       .from('donations')
       .select('*')
       .eq('donor_email', donorEmail)
