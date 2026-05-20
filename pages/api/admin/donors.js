@@ -78,15 +78,16 @@ async function getDonors(req, res) {
       throw error
     }
 
-    // Get donation stats for these donors
-    const donorIds = (data || []).map(d => d.id)
+    // Fetch donations by email — the donations table links to donors via
+    // donor_email, not a donor_id FK, so we match on email.
+    const donorEmails = (data || []).map(d => d.email).filter(Boolean)
     let donationsData = []
 
-    if (donorIds.length > 0) {
+    if (donorEmails.length > 0) {
       const { data: donations, error: donationsError } = await supabase
         .from('donations')
-        .select('donor_id, amount, status, created_at')
-        .in('donor_id', donorIds)
+        .select('donor_email, amount, created_at')
+        .in('donor_email', donorEmails)
         .eq('status', 'succeeded')
 
       if (!donationsError) {
@@ -94,18 +95,37 @@ async function getDonors(req, res) {
       }
     }
 
-    // Enrich donor data with recent donations
+    // Enrich donor data with recent donations and a computed lifetime total.
+    // The stored donors.total_donated may be stale (no trigger keeps it current),
+    // so we always derive it from the succeeded donations rows.
     const enrichedData = (data || []).map(donor => {
-      const donorDonations = donationsData.filter(d => d.donor_id === donor.id)
-      const recentDonations = donorDonations
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 5)
+      const donorDonations = donationsData.filter(
+        d => d.donor_email === donor.email
+      )
+      const sorted = donorDonations.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      )
+      const computedTotal = donorDonations.reduce(
+        (sum, d) => sum + parseFloat(d.amount || 0),
+        0
+      )
 
       return {
         ...donor,
-        recent_donations: recentDonations
+        total_donated: Math.round(computedTotal * 100) / 100,
+        recent_donations: sorted.slice(0, 5)
       }
     })
+
+    // Re-sort in JS when sorting by total_donated, since that field is now
+    // computed from donations and the DB column is stale.
+    if (sort === 'total_donated') {
+      enrichedData.sort((a, b) =>
+        order === 'asc'
+          ? a.total_donated - b.total_donated
+          : b.total_donated - a.total_donated
+      )
+    }
 
     return res.status(200).json({
       success: true,

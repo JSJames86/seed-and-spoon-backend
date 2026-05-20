@@ -58,11 +58,11 @@ async function getDonor(req, res, id) {
       })
     }
 
-    // Get full donation history
+    // Get full donation history — donations link to donors by email, not donor_id
     const { data: donations, error: donationsError } = await supabase
       .from('donations')
       .select('*')
-      .eq('donor_id', id)
+      .eq('donor_email', donor.email)
       .order('created_at', { ascending: false })
 
     if (donationsError) {
@@ -70,7 +70,8 @@ async function getDonor(req, res, id) {
     }
 
     // Calculate statistics
-    const succeededDonations = (donations || []).filter(d => d.status === 'succeeded')
+    const allDonations = donations || []
+    const succeededDonations = allDonations.filter(d => d.status === 'succeeded')
     const totalDonated = succeededDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)
     const donationCount = succeededDonations.length
 
@@ -78,7 +79,8 @@ async function getDonor(req, res, id) {
       success: true,
       data: {
         ...donor,
-        donations: donations || [],
+        total_donated: Math.round(totalDonated * 100) / 100,
+        donations: allDonations,
         statistics: {
           total_donated: totalDonated.toFixed(2),
           donation_count: donationCount,
