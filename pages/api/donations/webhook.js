@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { supabase } from '../../../lib/supabaseClient'
+import { sendDonationConfirmation } from '../../../lib/emailService'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -146,6 +147,21 @@ export default async function handler(req, res) {
         }
 
         console.log('Webhook: donation logged successfully:', paymentIntent.id)
+
+        // Send confirmation email to donor
+        if (paymentIntent.receipt_email) {
+          const emailResult = await sendDonationConfirmation({
+            donorEmail: paymentIntent.receipt_email,
+            donorName: paymentIntent.metadata?.donor_name || undefined,
+            amount: paymentIntent.amount / 100,
+            currency: paymentIntent.currency,
+            paymentIntentId: paymentIntent.id,
+            donationDate: new Date(paymentIntent.created * 1000).toISOString(),
+          })
+          if (!emailResult.success) {
+            console.error('Webhook: failed to send confirmation email:', emailResult.error)
+          }
+        }
 
         // Create gift record + queue acknowledgment for donor CRM
         await createGiftFromPayment(donation.id, paymentIntent)
