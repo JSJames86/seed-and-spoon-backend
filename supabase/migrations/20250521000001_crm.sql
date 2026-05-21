@@ -80,7 +80,7 @@ on channels for select
 using (
 exists (
 select 1 from channel_members cm
-where cm.channel_id = channels.id and cm.user_id = auth.uid()
+where cm.channel_id = id and cm.user_id = auth.uid()
 )
 or type = 'public'
 );
