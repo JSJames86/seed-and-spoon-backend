@@ -1,6 +1,7 @@
 import { requireAuth, getUserId } from '../../../../../lib/authMiddleware'
 import { supabase } from '../../../../../lib/supabaseClient'
 import { sendSuccess, Errors } from '../../../../../lib/errorResponses'
+import { notifyChannelMembers } from '../../../../../lib/notificationService'
 
 async function handler(req, res) {
   if (req.method === 'GET') return handleGet(req, res)
@@ -71,6 +72,22 @@ async function handlePost(req, res) {
       .single()
 
     if (error) return Errors.databaseError(res, error.message)
+
+    // Notify other channel members in the background
+    const { data: channel } = await supabase
+      .from('channels')
+      .select('name')
+      .eq('id', id)
+      .single()
+
+    notifyChannelMembers(id, userId, {
+      type: 'message',
+      title: `New message in #${channel?.name ?? 'channel'}`,
+      body: data.content.slice(0, 100),
+      data: { channel_id: id, message_id: data.id },
+      channels: ['in_app', 'push'],
+    }).catch(() => {})
+
     return sendSuccess(res, data, 201)
   } catch (err) {
     return Errors.internalError(res, err.message)
