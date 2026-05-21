@@ -38,7 +38,7 @@ async function handleGet(req, res) {
 }
 
 async function handlePost(req, res) {
-  const isStaff = await hasCrmRole(getUserId(req), ['admin', 'staff'])
+  const isStaff = await hasCrmRole(req, ['admin', 'staff'])
   if (!isStaff) return Errors.forbidden(res, 'Admin or staff CRM role required')
 
   const { id } = req.query
@@ -67,7 +67,7 @@ async function handleDelete(req, res) {
   // Users can remove themselves; staff/admin can remove anyone
   const targetUserId = user_id || userId
   if (targetUserId !== userId) {
-    const isStaff = await hasCrmRole(userId, ['admin', 'staff'])
+    const isStaff = await hasCrmRole(req, ['admin', 'staff'])
     if (!isStaff) return Errors.forbidden(res, 'Admin or staff CRM role required')
   }
 

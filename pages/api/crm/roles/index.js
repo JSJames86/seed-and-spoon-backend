@@ -29,7 +29,7 @@ async function handleGet(req, res) {
 }
 
 async function handlePost(req, res) {
-  const isAdmin = await hasCrmRole(getUserId(req), 'admin')
+  const isAdmin = await hasCrmRole(req, 'admin')
   if (!isAdmin) return Errors.forbidden(res, 'Admin CRM role required')
 
   const { user_id, role } = req.body

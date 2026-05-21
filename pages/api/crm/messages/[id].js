@@ -53,7 +53,7 @@ async function handleDelete(req, res) {
 
     if (!message) return Errors.notFound(res, 'Message')
 
-    const isAdmin = await hasCrmRole(userId, ['admin', 'staff'])
+    const isAdmin = await hasCrmRole(req, ['admin', 'staff'])
     if (message.sender_id !== userId && !isAdmin) {
       return Errors.forbidden(res, 'Can only delete your own messages')
     }
