@@ -37,7 +37,7 @@ export function ContactConfirmationEmail({ firstName, subject, message }: Contac
       <Body style={body}>
         <Section style={header}>
           <Container style={headerInner}>
-            <Img src="https://seedandspoon.org/logo.png" width="160" alt="Seed & Spoon" style={logoImg} />
+            <Img src="https://seedandspoon.org/assets/logo/seed-and-spoon-logo-full-compact.png" width="160" alt="Seed & Spoon" style={logoImg} />
             <Text style={tagline}>Nourishing Newark, One Family at a Time</Text>
           </Container>
         </Section>
@@ -106,7 +106,7 @@ export function ContactInternalEmail({ name, email, phone, subject, message, sub
       <Body style={body}>
         <Section style={header}>
           <Container style={headerInner}>
-            <Img src="https://seedandspoon.org/logo.png" width="160" alt="Seed & Spoon" style={logoImg} />
+            <Img src="https://seedandspoon.org/assets/logo/seed-and-spoon-logo-full-compact.png" width="160" alt="Seed & Spoon" style={logoImg} />
             <Text style={tagline}>Internal Notification</Text>
           </Container>
         </Section>
