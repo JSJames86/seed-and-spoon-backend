@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   const supabase = getServiceSupabase()
 
   const { data: volunteer, error: dbError } = await supabase
-    .from('volunteers')
+    .from('volunteer_applications')
     .insert({
       name,
       email: (email as string).toLowerCase().trim(),
