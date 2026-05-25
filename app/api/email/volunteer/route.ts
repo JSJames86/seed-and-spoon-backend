@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendEmail } from '@/lib/send-email'
-import { renderVolunteerConfirmation, renderVolunteerAdminAlert } from '@/lib/email-templates'
+import { createClient } from '@supabase/supabase-js'
+import { sendEmail } from '@/lib/email-service'
+import { renderVolunteerConfirmationEmail } from '@/emails/templates/volunteer'
+
+function getServiceSupabase() {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) throw new Error('Missing Supabase service role environment variables')
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
+}
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -10,40 +18,50 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { name, email, phone, availability, interests } = body as Record<string, string>
+  const { name, email, interests, availability } = body as Record<string, string | string[]>
 
-  if (!name || typeof name !== 'string' || name.trim() === '') {
-    return NextResponse.json({ error: 'Name is required' }, { status: 422 })
-  }
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
-    return NextResponse.json({ error: 'A valid email address is required' }, { status: 422 })
+  if (!name || !email || !interests || !availability) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 422 })
   }
 
-  const adminEmail = process.env.RESEND_ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'hello@seedandspoon.org'
+  const supabase = getServiceSupabase()
+
+  const { data: volunteer, error: dbError } = await supabase
+    .from('volunteers')
+    .insert({
+      name,
+      email: (email as string).toLowerCase().trim(),
+      interests,
+      availability,
+      status: 'pending',
+    })
+    .select('id, email')
+    .single()
+
+  if (dbError) {
+    console.error('[volunteer] db error:', dbError)
+    return NextResponse.json({ error: 'Failed to save volunteer' }, { status: 500 })
+  }
+
+  const firstName = (name as string).split(' ')[0]
 
   try {
-    await Promise.all([
-      sendEmail({
-        to: email.toLowerCase().trim(),
-        subject: 'Thanks for your interest in volunteering — Seed & Spoon',
-        html: renderVolunteerConfirmation({ name: name.trim() }),
-      }),
-      sendEmail({
-        to: adminEmail,
-        subject: `New volunteer interest from ${name.trim()}`,
-        html: renderVolunteerAdminAlert({
-          name: name.trim(),
-          email: email.toLowerCase().trim(),
-          phone: phone?.trim(),
-          availability: availability?.trim(),
-          interests: interests?.trim(),
-        }),
-      }),
-    ])
-  } catch (err) {
-    console.error('[volunteer] email error:', err)
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+    const html = await renderVolunteerConfirmationEmail({
+      firstName,
+      interests: interests as string[],
+      availability: availability as string,
+    })
+
+    await sendEmail({
+      to: volunteer.email,
+      subject: "You're in! Welcome to Seed & Spoon Volunteers 🌱",
+      html,
+      emailType: 'volunteer_confirmation',
+      metadata: { volunteer_id: volunteer.id },
+    })
+  } catch (emailError) {
+    console.error('[volunteer] email error:', emailError)
   }
 
-  return NextResponse.json({ success: true }, { status: 200 })
+  return NextResponse.json({ success: true, volunteerId: volunteer.id }, { status: 200 })
 }
