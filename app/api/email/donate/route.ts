@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email-service'
-import { renderDonationReceiptEmail } from '@/emails/templates/donation'
+import { renderDonationReceiptEmail, renderDonationInternalEmail } from '@/emails/templates/donation'
+
+const STAFF_EMAIL = process.env.STAFF_EMAIL || 'team@seedandspoon.org'
 
 export async function POST(req: NextRequest) {
   let body: unknown
@@ -17,27 +19,39 @@ export async function POST(req: NextRequest) {
   }
 
   const firstName = name.split(' ')[0]
+  const parsedAmount = parseFloat(amount)
+  const type = donationType as 'one-time' | 'monthly'
 
-  const html = await renderDonationReceiptEmail({
-    firstName,
-    amount: parseFloat(amount),
-    donationType: donationType as 'one-time' | 'monthly',
-    date,
-    transactionId,
-  })
+  const [receiptHtml, internalHtml] = await Promise.all([
+    renderDonationReceiptEmail({ firstName, amount: parsedAmount, donationType: type, date, transactionId }),
+    renderDonationInternalEmail({ name, email, amount: parsedAmount, donationType: type, date, transactionId }),
+  ])
 
-  const result = await sendEmail({
-    to: email,
-    subject: 'Your donation receipt — Seed & Spoon',
-    html,
-    emailType: 'donation_receipt',
-    metadata: { amount, donationType, transactionId },
-  })
+  const [receipt, internal] = await Promise.all([
+    sendEmail({
+      to: email,
+      subject: 'Your donation receipt — Seed & Spoon',
+      html: receiptHtml,
+      emailType: 'donation_receipt',
+      metadata: { amount, donationType, transactionId },
+    }),
+    sendEmail({
+      to: STAFF_EMAIL,
+      subject: `[Donation] $${amount} ${type} from ${name}`,
+      html: internalHtml,
+      emailType: 'donation_internal',
+      metadata: { donor_name: name, donor_email: email, amount, donationType, transactionId },
+    }),
+  ])
 
-  if (!result.success) {
-    console.error('[donate] receipt email failed:', result.error)
+  if (!receipt.success) {
+    console.error('[donate] receipt email failed:', receipt.error)
     return NextResponse.json({ error: 'Failed to send receipt' }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true, messageId: result.messageId }, { status: 200 })
+  if (!internal.success) {
+    console.error('[donate] staff notification failed:', internal.error)
+  }
+
+  return NextResponse.json({ success: true, messageId: receipt.messageId }, { status: 200 })
 }
