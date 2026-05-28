@@ -104,6 +104,62 @@ export async function renderDonationReceiptEmail(props: DonationReceiptProps): P
 
 export default DonationReceiptEmail
 
+// ─── Staff Notification ───────────────────────────────────────────────────────
+
+interface DonationInternalProps {
+  name: string
+  email: string
+  amount: number
+  donationType: 'one-time' | 'monthly'
+  date: string
+  transactionId: string
+}
+
+export function DonationInternalEmail({ name, email, amount, donationType, date, transactionId }: DonationInternalProps) {
+  const formattedAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+  return (
+    <Html lang="en">
+      <Head />
+      <Preview>New {donationType} donation of {formattedAmount} from {name}</Preview>
+      <Body style={body}>
+        <Section style={header}>
+          <Container style={headerInner}>
+            <Img src="https://seedandspoon.org/assets/logo/seed-and-spoon-logo-full-compact.png" width="160" alt="Seed & Spoon" style={logoImg} />
+            <Text style={tagline}>Internal Notification</Text>
+          </Container>
+        </Section>
+        <Container style={container}>
+          <Text style={receiptLabel}>New Donation</Text>
+          <Text style={amountDisplay}>{formattedAmount}</Text>
+          {donationType === 'monthly' && <Text style={recurringBadge}>Monthly Recurring</Text>}
+          <Hr style={divider} />
+          <Heading style={h1}>A new donation just came in.</Heading>
+          <Section style={dataTable}>
+            <Row label="Donor" value={name} />
+            <Row label="Email" value={email} />
+            <Row label="Amount" value={formattedAmount} />
+            <Row label="Type" value={donationType === 'monthly' ? 'Monthly Recurring' : 'One-Time'} />
+            <Row label="Date" value={date} />
+            <Row label="Transaction ID" value={transactionId} mono />
+          </Section>
+          <Section style={ctaSection}>
+            <Button href={`mailto:${email}`} style={ctaButton}>Email Donor</Button>
+          </Section>
+        </Container>
+        <Section style={footer}>
+          <Container style={footerInner}>
+            <Text style={footerText}>Seed &amp; Spoon Internal &bull; Newark, NJ</Text>
+          </Container>
+        </Section>
+      </Body>
+    </Html>
+  )
+}
+
+export async function renderDonationInternalEmail(props: DonationInternalProps): Promise<string> {
+  return render(<DonationInternalEmail {...props} />)
+}
+
 // ─── Row helper ───────────────────────────────────────────────────────────────
 
 function Row({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
