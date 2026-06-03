@@ -11,6 +11,7 @@ import {
   LogOut,
   ChevronDown,
   X,
+  BookUser,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getSupabaseClient } from "@/lib/supabaseClientFrontend"
@@ -31,6 +32,7 @@ const navItems = [
   { title: "Site Partners", href: "/dashboard/sites", icon: Building2 },
   { title: "Inventory", href: "/dashboard/inventory", icon: Package },
   { title: "Volunteers", href: "/dashboard/volunteers", icon: Users },
+  { title: "Key Contacts", href: "/dashboard/admin/contacts", icon: BookUser },
 ]
 
 interface SidebarProps {
